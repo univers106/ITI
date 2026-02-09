@@ -1,0 +1,7 @@
+services:
+  iti:
+    image: iti
+    build: .
+    ports:
+      - "8080:8080"
+
