@@ -1,3 +1,4 @@
+// Package main starts a simple HTTP server.
 package main
 
 import (
@@ -7,8 +8,10 @@ import (
 
 func main() {
 	// Register a handler function for the default path "/"
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, Docker!")
+	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
+		if _, err := fmt.Fprint(w, "Hello, Docker!"); err != nil {
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+		}
 	})
 
 	// Start the HTTP server on port 8080
