@@ -1,0 +1,30 @@
+name: Lint
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  golangci:
+    name: golangci-lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+
+      - name: Download dependencies
+        working-directory: backend
+        run: go mod download
+
+      - name: Install golangci-lint
+        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+      - name: Run lint
+        working-directory: backend
+        run: $(go env GOPATH)/bin/golangci-lint run ./...
