@@ -1,0 +1,45 @@
+name: Enforce user branch pattern
+
+on:
+  pull_request:
+    types: [opened, reopened, edited]
+  push:
+    branches-ignore: ["main"]
+
+jobs:
+  validate-user-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract branch name safely
+        id: extract
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BRANCH="${{ github.event.pull_request.head.ref }}"
+          else
+            BRANCH="${GITHUB_REF#refs/heads/}"
+          fi
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+      - name: Validate branch
+        env:
+          BRANCH: ${{ steps.extract.outputs.branch }}
+          USER: ${{ github.actor }}
+        run: |
+          echo "Checking: user='$USER', branch='$BRANCH'"
+          
+          if [[ -z "$BRANCH" ]]; then
+            echo "⚠️ Empty branch name - skipping (post-merge)"
+            exit 0
+          fi
+          
+          if [[ "$BRANCH" =~ ^features/ ]]; then
+            echo "✅ Features branch - allowed"
+            exit 0
+          fi
+          
+          if [[ "$BRANCH" =~ ^users/$USER/ ]]; then
+            echo "✅ User branch - allowed"
+            exit 0
+          fi
+          
+          echo "::error::Branch '$BRANCH' invalid for user '$USER'"
+          exit 1
