@@ -5,11 +5,18 @@ RUN ["apk", "upgrade"]
 RUN ["apk", "add", "--no-cache", "bash"]
 
 RUN ["apk", "add", "go=1.25.7-r0"]
+RUN ["apk", "add", "npm"]
 
-RUN ["mkdir", "/src/"]
+RUN ["mkdir", "/src_backend/"]
+RUN ["mkdir", "/src_frontend/"]
 RUN ["mkdir", "/app/"]
 
-WORKDIR /src
+WORKDIR /src_frontend
+COPY frontend .
+RUN ["npm", "install"]
+RUN ["npm", "build"]
+
+WORKDIR /src_backend
 
 COPY backend .
 
