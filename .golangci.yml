@@ -10,6 +10,7 @@ linters:
     - errcheck
     - revive
     - ineffassign
-
-issues:
-  exclude-use-default: false
+    - funlen
+    - lll
+    - unparam
+    - unused

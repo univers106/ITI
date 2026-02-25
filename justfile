@@ -10,5 +10,5 @@ docker-down:
 
 # Запустить линтер Go
 [group('go')]
-lint:
+go-lint:
     cd backend && golangci-lint run ./...

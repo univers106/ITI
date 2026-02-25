@@ -1,11 +1,11 @@
-name: Lint
+name: Go Lint
 
 on:
   pull_request:
   workflow_dispatch:
 
 jobs:
-  golangci:
+  go-lint:
     name: golangci-lint
     runs-on: ubuntu-latest
 
