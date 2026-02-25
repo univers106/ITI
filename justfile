@@ -7,3 +7,8 @@ docker-dev:
 [group('docker')]
 docker-down:
     docker-compose down
+
+# Запустить линтер Go
+[group('go')]
+lint:
+    cd backend && golangci-lint run ./...
