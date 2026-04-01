@@ -2,11 +2,10 @@
 Для запуска npm run dev
 Для установки зависимостей npm install
 
+Сейчас идёт пересмотр стэка
 
+На данный момент frontend скорее служит примером, а не частью сервиса
 
-
-это нужно сделать, но пока что мне лень:
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
 ```js
 // eslint.config.js
