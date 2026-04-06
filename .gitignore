@@ -12,6 +12,7 @@ lerna-debug.log*
 dist
 dist-ssr
 backend/docs/_build/
+build
 
 # virtual environment, chaches and other
 node_modules
