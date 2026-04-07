@@ -1,13 +1,28 @@
 # yaml-language-server: $schema=https://taskfile.dev/schema.json
 
-version: '3'
-
-vars:
-  GREETING: Hello, world!
+version: "3"
 
 tasks:
-  default:
-    desc: Print a greeting message
+  build_all:
+    desc: build backend and frontend
+    deps: [build_frontend, build_backend]
+    failfast: true
+
+  build_frontend:
+    desc: build frontend
     cmds:
-      - echo "{{.GREETING}}"
-    silent: true
+      - 'echo "todo: frontend builder"'
+
+  build_backend:
+    desc: build backend
+    dir: "./backend"
+    cmds:
+      - go build -o "../build/"
+
+  build_run:
+    desc: собирает всё и запускает
+    aliases: [default]
+    deps: [build_all]
+    dir: build
+    cmds:
+      - ./ITI
