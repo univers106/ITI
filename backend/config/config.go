@@ -10,7 +10,7 @@ import (
 )
 
 type Config struct {
-	JwtKey []byte `yaml:"jwt_key"`
+	JwtKey string `yaml:"jwt_key"`
 }
 
 func ReadConfig(path string) Config {
