@@ -3,33 +3,38 @@ package main
 import (
 	"log/slog"
 
-	echojwt "github.com/labstack/echo-jwt/v5"
+	gorillaSessions "github.com/gorilla/sessions"
 	"github.com/labstack/echo/v5"
-	"github.com/labstack/echo/v5/middleware"
+	echoMiddlewares "github.com/labstack/echo/v5/middleware"
 	"github.com/univers106/ITI/config"
+	"github.com/univers106/ITI/handlers/auth"
+	"github.com/univers106/ITI/handlers/private"
 	"github.com/univers106/ITI/handlers/public"
+	sessionsMiddleware "github.com/univers106/ITI/middlewares/sessions"
 )
 
 func main() {
 	cfg := config.ReadConfig("config.yaml")
 
-	jwtMiddleware := echojwt.WithConfig(
-		echojwt.Config{
-			SigningKey: cfg.JwtKey,
-		},
-	)
+	cookieStore := gorillaSessions.NewCookieStore([]byte(cfg.SessionKey))
+	cookieStore.Options.Domain = cfg.Domain
+	cookieStore.Options.Path = "/"
+	cookieStore.Options.MaxAge = 60 * 60 * 24
+	sessionMiddleware := sessionsMiddleware.NewSessionMiddleware(cookieStore)
 
 	e := echo.New()
 
-	e.Use(middleware.RequestLogger())
-	e.Use(middleware.Recover())
+	e.Use(echoMiddlewares.RequestLogger())
+	e.Use(echoMiddlewares.Recover())
 
 	apiGroup := e.Group("/api")
-	privateApi := apiGroup.Group("/private", jwtMiddleware)
+	privateApi := apiGroup.Group("/private", sessionMiddleware)
 	publicApi := apiGroup.Group("/public")
+	authApi := apiGroup.Group("/auth", sessionMiddleware)
 
-	privateApi.GET("/hello", public.GetHello)
+	privateApi.GET("/hello", private.GetHello)
 	publicApi.GET("/hello", public.GetHello)
+	authApi.POST("/login", auth.PostLogin)
 
 	if err := e.Start(":8080"); err != nil {
 		slog.Error("failed to start server", "error", err)
