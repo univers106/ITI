@@ -28,7 +28,6 @@ func PostLogin(c *echo.Context) error {
 	}
 
 	session.Values["username"] = username
-	session.Values["password"] = password
 	if err := session.Save(c.Request(), c.Response()); err != nil {
 		return err
 	}
