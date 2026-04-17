@@ -14,7 +14,7 @@ import (
 	"github.com/univers106/ITI/handlers/private"
 	"github.com/univers106/ITI/handlers/public"
 	databaseMiddleware "github.com/univers106/ITI/middlewares/database"
-	sessionsMiddleware "github.com/univers106/ITI/middlewares/sessions"
+	"github.com/univers106/ITI/middlewares/sessionsMiddleware"
 )
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 	cookieStore.Options.Domain = cfg.Domain
 	cookieStore.Options.Path = "/"
 	cookieStore.Options.MaxAge = 60 * 60 * 24
-	sessionMiddleware := sessionsMiddleware.NewSessionMiddleware(cookieStore)
+	mainSessionMiddleware := sessionsMiddleware.NewSessionsMiddleware(cookieStore)
 
 	e := echo.New()
 
@@ -38,9 +38,10 @@ func main() {
 	e.Use(databaseMiddleware.NewDatabaseMiddleware(db))
 
 	apiGroup := e.Group("/api")
-	privateApi := apiGroup.Group("/private", sessionMiddleware)
+	privateApi := apiGroup.Group("/private", mainSessionMiddleware)
+	privateApi.Use(sessionsMiddleware.OnlyUsersMiddleware)
 	publicApi := apiGroup.Group("/public")
-	authApi := apiGroup.Group("/auth", sessionMiddleware)
+	authApi := apiGroup.Group("/auth", mainSessionMiddleware)
 
 	privateApi.GET("/hello", private.GetHello)
 	publicApi.GET("/hello", public.GetHello)

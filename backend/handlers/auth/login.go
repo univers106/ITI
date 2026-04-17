@@ -5,11 +5,11 @@ import (
 
 	"github.com/labstack/echo/v5"
 	databaseMiddleware "github.com/univers106/ITI/middlewares/database"
-	sessionsMiddleware "github.com/univers106/ITI/middlewares/sessions"
+	"github.com/univers106/ITI/middlewares/sessionsMiddleware"
 )
 
 func PostLogin(c *echo.Context) error {
-	session, err := sessionsMiddleware.GetUserSession(c)
+	session, err := sessionsMiddleware.GetAuthSessionFromContext(c)
 	if err != nil {
 		return err
 	}
