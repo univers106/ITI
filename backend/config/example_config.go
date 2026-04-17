@@ -15,6 +15,7 @@ func getExampleConfig() []byte {
 	example = Config{
 		SessionKey: string(securecookie.GenerateRandomKey(32)),
 		Domain:     "localhost",
+		DataDir:    "./data",
 	}
 
 	data, err = yaml.Marshal(example)

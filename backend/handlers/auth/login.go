@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v5"
+	databaseMiddleware "github.com/univers106/ITI/middlewares/database"
 	sessionsMiddleware "github.com/univers106/ITI/middlewares/sessions"
 )
 
@@ -12,22 +13,26 @@ func PostLogin(c *echo.Context) error {
 	if err != nil {
 		return err
 	}
-	username := c.FormValue("username")
-	if username == "" {
+	loginValue := c.FormValue("login")
+	if loginValue == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "bad request"})
 	}
-	password := c.FormValue("password")
-	if password == "" {
+	passwordValue := c.FormValue("password")
+	if passwordValue == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "bad request"})
 	}
-	if username != "test" {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"message": "unauthorized"})
+
+	db, err := databaseMiddleware.GetDatabase(c)
+	if err != nil {
+		return err
 	}
-	if password != "pass" {
+
+	user, err := db.UserAuthentication(loginValue, passwordValue)
+	if err != nil {
 		return c.JSON(http.StatusUnauthorized, map[string]string{"message": "unauthorized"})
 	}
 
-	session.Values["username"] = username
+	session.Values["login"] = user.Login
 	if err := session.Save(c.Request(), c.Response()); err != nil {
 		return err
 	}
