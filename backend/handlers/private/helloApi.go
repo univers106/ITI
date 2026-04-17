@@ -4,11 +4,11 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v5"
-	"github.com/univers106/ITI/database"
+	"github.com/univers106/ITI/middlewares/sessionsMiddleware"
 )
 
 func GetHello(c *echo.Context) error {
-	user, err := echo.ContextGet[database.User](c, "user")
+	user, err := sessionsMiddleware.GetUserFromContext(c)
 	if err != nil {
 		return err
 	}
