@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v5"
 	"github.com/univers106/ITI/database"
-	databaseMiddleware "github.com/univers106/ITI/middlewares/database"
+	"github.com/univers106/ITI/middlewares/databaseMiddleware"
 )
 
 const AuthSession = "auth"

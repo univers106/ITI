@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v5"
-	databaseMiddleware "github.com/univers106/ITI/middlewares/database"
+	"github.com/univers106/ITI/middlewares/databaseMiddleware"
 	"github.com/univers106/ITI/middlewares/sessionsMiddleware"
 )
 

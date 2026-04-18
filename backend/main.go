@@ -12,7 +12,7 @@ import (
 	filebased "github.com/univers106/ITI/database/file_based"
 	"github.com/univers106/ITI/handlers/private"
 	"github.com/univers106/ITI/handlers/public"
-	databaseMiddleware "github.com/univers106/ITI/middlewares/database"
+	"github.com/univers106/ITI/middlewares/databaseMiddleware"
 	"github.com/univers106/ITI/middlewares/sessionsMiddleware"
 )
 
@@ -21,10 +21,10 @@ func main() {
 
 	var db database.Database = filebased.NewFileBasedDatabase(cfg.DataDir)
 	if _, err := db.GetUserByLogin("test_user"); errors.Is(err, database.ErrUserNotFound) {
-		db.AddUser("test_user", "Test User", "test_password")
+		db.CreateUser("test_user", "Test User", "test_password")
 	}
 	if _, err := db.GetUserByLogin("test_admin"); errors.Is(err, database.ErrUserNotFound) {
-		db.AddUser("test_admin", "ADMIN", "test_password")
+		db.CreateUser("test_admin", "ADMIN", "test_password")
 		admin, err := db.GetUserByLogin("test_admin")
 		if err != nil {
 			panic(err)

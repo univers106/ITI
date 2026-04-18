@@ -46,7 +46,7 @@ func (f *FileBasedDatabase) UserAuthentication(login string, password string) (*
 	}
 	return nil, database.ErrUserNotFound
 }
-func (f *FileBasedDatabase) AddUser(login string, name string, password string) error {
+func (f *FileBasedDatabase) CreateUser(login string, name string, password string) error {
 	defer f.save()
 
 	if password == "" {

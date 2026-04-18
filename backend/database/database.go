@@ -26,7 +26,7 @@ type Database interface {
 	GetUserByID(int) (*User, error)
 	GetUserByLogin(string) (*User, error)
 	UserAuthentication(login string, password string) (*User, error)
-	AddUser(login string, name string, password string) error
+	CreateUser(login string, name string, password string) error
 	DeleteUser(id int) error
 	ChangeUserPassword(user User, password string) error
 	UserAddPermissions(user_id int, permission string) error
@@ -49,5 +49,8 @@ type User struct {
 }
 
 func (u *User) HasPermission(permission string) bool {
+	if slices.Contains(u.Permissions, PermSuperUser) {
+		return true
+	}
 	return slices.Contains(u.Permissions, permission)
 }
