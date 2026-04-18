@@ -22,6 +22,6 @@ func OnlyUsersMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func GetUserFromContext(c *echo.Context) (database.User, error) {
-	return echo.ContextGet[database.User](c, "user")
+func GetUserFromContext(c *echo.Context) (*database.User, error) {
+	return echo.ContextGet[*database.User](c, "user")
 }

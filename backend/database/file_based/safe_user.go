@@ -26,6 +26,6 @@ func (s *safeUser) CheckPassword(password string) bool {
 	return slices.Equal(s.PasswordHash, hash)
 }
 
-func (s *safeUser) GetUser() database.User {
-	return s.User
+func (s *safeUser) GetUser() *database.User {
+	return &s.User
 }

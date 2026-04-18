@@ -1,6 +1,7 @@
 package filebased
 
 import (
+	"slices"
 	"sync"
 
 	"github.com/univers106/ITI/database"
@@ -12,7 +13,7 @@ type FileBasedDatabase struct {
 	dirPath string
 }
 
-func (f *FileBasedDatabase) GetUserByID(id int) (database.User, error) {
+func (f *FileBasedDatabase) GetUserByID(id int) (*database.User, error) {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
 	for _, user := range f.users {
@@ -20,9 +21,9 @@ func (f *FileBasedDatabase) GetUserByID(id int) (database.User, error) {
 			return user.GetUser(), nil
 		}
 	}
-	return database.User{}, database.ErrUserNotFound
+	return nil, database.ErrUserNotFound
 }
-func (f *FileBasedDatabase) GetUserByLogin(login string) (database.User, error) {
+func (f *FileBasedDatabase) GetUserByLogin(login string) (*database.User, error) {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
 	for _, user := range f.users {
@@ -30,9 +31,9 @@ func (f *FileBasedDatabase) GetUserByLogin(login string) (database.User, error) 
 			return user.GetUser(), nil
 		}
 	}
-	return database.User{}, database.ErrUserNotFound
+	return nil, database.ErrUserNotFound
 }
-func (f *FileBasedDatabase) UserAuthentication(login string, password string) (database.User, error) {
+func (f *FileBasedDatabase) UserAuthentication(login string, password string) (*database.User, error) {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
 	for _, user := range f.users {
@@ -40,10 +41,10 @@ func (f *FileBasedDatabase) UserAuthentication(login string, password string) (d
 			if user.CheckPassword(password) {
 				return user.GetUser(), nil
 			}
-			return database.User{}, database.ErrIncorrectPassword
+			return nil, database.ErrIncorrectPassword
 		}
 	}
-	return database.User{}, database.ErrUserNotFound
+	return nil, database.ErrUserNotFound
 }
 func (f *FileBasedDatabase) AddUser(login string, name string, password string) error {
 	defer f.save()
@@ -64,6 +65,8 @@ func (f *FileBasedDatabase) AddUser(login string, name string, password string) 
 	defer f.mu.Unlock()
 	newUser := safeUser{User: database.User{Login: login, Name: name}}
 	newUser.SetPassword(password)
+
+	newUser.ID = len(f.users) + 1
 	f.users = append(f.users, newUser)
 	return nil
 }
@@ -92,6 +95,57 @@ func (f *FileBasedDatabase) ChangeUserPassword(user database.User, password stri
 		}
 	}
 	return database.ErrUserNotFound
+}
+
+func (f *FileBasedDatabase) UserAddPermissions(user_id int, permission string) error {
+	defer f.save()
+
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	for i, _ := range f.users {
+		user := &f.users[i]
+		if user.ID == user_id {
+			if slices.Contains(user.Permissions, permission) {
+				return database.ErrAlreadyExists
+			}
+			user.Permissions = append(user.Permissions, permission)
+			return nil
+		}
+	}
+	return database.ErrUserNotFound
+}
+func (f *FileBasedDatabase) UserRemovePermissions(user_id int, permission string) error {
+	defer f.save()
+
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	for i, _ := range f.users {
+		user := &f.users[i]
+		if user.ID == user_id {
+			for i, p := range user.Permissions {
+				if p == permission {
+					user.Permissions = append(user.Permissions[:i], user.Permissions[i+1:]...)
+					return nil
+				}
+			}
+			return database.ErrPermissionNotFound
+		}
+	}
+	return database.ErrUserNotFound
+}
+
+func (f *FileBasedDatabase) UserCheckPermission(user_id int, permission string) (bool, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	for _, user := range f.users {
+		if user.ID == user_id {
+			if slices.Contains(user.Permissions, permission) {
+				return true, nil
+			}
+			return false, nil
+		}
+	}
+	return false, database.ErrUserNotFound
 }
 
 func NewFileBasedDatabase(dir string) *FileBasedDatabase {

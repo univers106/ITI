@@ -10,7 +10,6 @@ import (
 	"github.com/univers106/ITI/config"
 	"github.com/univers106/ITI/database"
 	filebased "github.com/univers106/ITI/database/file_based"
-	"github.com/univers106/ITI/handlers/auth"
 	"github.com/univers106/ITI/handlers/private"
 	"github.com/univers106/ITI/handlers/public"
 	databaseMiddleware "github.com/univers106/ITI/middlewares/database"
@@ -24,11 +23,19 @@ func main() {
 	if _, err := db.GetUserByLogin("test_user"); errors.Is(err, database.ErrUserNotFound) {
 		db.AddUser("test_user", "Test User", "test_password")
 	}
+	if _, err := db.GetUserByLogin("test_admin"); errors.Is(err, database.ErrUserNotFound) {
+		db.AddUser("test_admin", "ADMIN", "test_password")
+		admin, err := db.GetUserByLogin("test_admin")
+		if err != nil {
+			panic(err)
+		}
+		db.UserAddPermissions(admin.ID, database.PermSuperUser)
+	}
 
 	cookieStore := gorillaSessions.NewCookieStore([]byte(cfg.SessionKey))
 	cookieStore.Options.Domain = cfg.Domain
 	cookieStore.Options.Path = "/"
-	cookieStore.Options.MaxAge = 60 * 60 * 24
+	cookieStore.Options.MaxAge = 60 * 60 * 1
 	mainSessionMiddleware := sessionsMiddleware.NewSessionsMiddleware(cookieStore)
 
 	e := echo.New()
@@ -41,11 +48,12 @@ func main() {
 	privateApi := apiGroup.Group("/private", mainSessionMiddleware)
 	privateApi.Use(sessionsMiddleware.OnlyUsersMiddleware)
 	publicApi := apiGroup.Group("/public")
-	authApi := apiGroup.Group("/auth", mainSessionMiddleware)
 
 	privateApi.GET("/hello", private.GetHello)
+	privateApi.GET("/logout", private.PostLogut, mainSessionMiddleware)
+
 	publicApi.GET("/hello", public.GetHello)
-	authApi.POST("/login", auth.PostLogin)
+	publicApi.POST("/login", public.PostLogin, mainSessionMiddleware)
 
 	if err := e.Start(":8080"); err != nil {
 		slog.Error("failed to start server", "error", err)

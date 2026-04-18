@@ -37,25 +37,25 @@ func GetAuthSessionFromContext(c *echo.Context) (*sessions.Session, error) {
 // всё кроме ErrUnauthorized является ошибкой сервера,
 // а ErrUnauthorized нужно обработать и выдать 401
 // обычные эндпоинты должны использовать мидлварь OnlyUsersMiddleware
-func GetUserFromSessionContext(c *echo.Context) (database.User, error) {
+func GetUserFromSessionContext(c *echo.Context) (*database.User, error) {
 	session, err := GetAuthSessionFromContext(c)
 	if err != nil {
-		return database.User{}, err
+		return nil, err
 	}
 
 	login := session.Values["login"]
 	if login == nil {
-		return database.User{}, ErrUnauthorized
+		return nil, ErrUnauthorized
 	}
 	loginStr := login.(string)
 	db, err := databaseMiddleware.GetDatabase(c)
 	if err != nil {
-		return database.User{}, err
+		return nil, err
 	}
 
 	user, err := db.GetUserByLogin(loginStr)
 	if err != nil {
-		return database.User{}, ErrUserNotFound
+		return nil, ErrUserNotFound
 	}
 	return user, nil
 }
