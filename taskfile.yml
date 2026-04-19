@@ -20,7 +20,7 @@ tasks:
       - go build -o "../build/"
 
   build_run:
-    desc: собирает всё и запускает
+    desc: build_all and run it
     aliases: [default]
     deps: [build_all]
     dir: build

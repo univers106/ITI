@@ -1,6 +1,7 @@
 package public
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
@@ -11,33 +12,39 @@ import (
 func PostLogin(c *echo.Context) error {
 	session, err := sessionsMiddleware.GetAuthSessionFromContext(c)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get auth session: %w", err)
 	}
+
 	if !session.IsNew {
-		return c.JSON(http.StatusOK, map[string]string{"message": "ok, but why?"})
+		return c.JSON(http.StatusOK, map[string]string{"message": "ok, but you already logged in"})
 	}
+
 	loginValue := c.FormValue("login")
 	if loginValue == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "bad request"})
+		return echo.NewHTTPError(http.StatusBadRequest, "login value is null")
 	}
+
 	passwordValue := c.FormValue("password")
 	if passwordValue == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "bad request"})
+		return echo.NewHTTPError(http.StatusBadRequest, "password value is null")
 	}
 
 	db, err := databaseMiddleware.GetDatabase(c)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get database: %w", err)
 	}
 
 	user, err := db.UserAuthentication(loginValue, passwordValue)
 	if err != nil {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"message": "unauthorized"})
+		return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 	}
 
 	session.Values["login"] = user.Login
-	if err := session.Save(c.Request(), c.Response()); err != nil {
-		return err
+
+	err = session.Save(c.Request(), c.Response())
+	if err != nil {
+		return fmt.Errorf("failed to save session: %w", err)
 	}
+
 	return c.JSON(http.StatusOK, map[string]string{"message": "ok"})
 }

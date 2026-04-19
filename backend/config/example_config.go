@@ -7,13 +7,21 @@ import (
 	"go.yaml.in/yaml/v4"
 )
 
+const (
+	defaultSessionKeySize             = 32
+	defaultDirPerm        os.FileMode = 0o750
+	defaultFilePerm       os.FileMode = 0o600
+)
+
 func getExampleConfig() []byte {
 	var example Config
+
 	var data []byte
+
 	var err error
 
 	example = Config{
-		SessionKey: string(securecookie.GenerateRandomKey(32)),
+		SessionKey: string(securecookie.GenerateRandomKey(defaultSessionKeySize)),
 		Domain:     "localhost",
 		DataDir:    "./data",
 	}
@@ -22,21 +30,17 @@ func getExampleConfig() []byte {
 	if err != nil {
 		panic("cannot marshal example config")
 	}
-	return data
 
+	return data
 }
 
-func createExample(path string) ([]byte, error) {
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
+func createExample(path string) []byte {
 	data := getExampleConfig()
-	_, err = file.Write(data)
+
+	err := os.WriteFile(path, data, defaultFilePerm)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
-	return data, nil
+
+	return data
 }

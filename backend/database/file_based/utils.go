@@ -2,17 +2,27 @@ package filebased
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
+const (
+	defaultDirPerm  os.FileMode = 0o750
+	defaultFilePerm os.FileMode = 0o600
+)
+
 func createDirIfNotExists(dirPath string) {
-	if dir, err := os.Stat(dirPath); !os.IsNotExist(err) {
+	dir, err := os.Stat(dirPath)
+	if !os.IsNotExist(err) {
 		if !dir.IsDir() {
 			panic(dirPath + " is exist and is not a directory")
 		}
+
 		return
 	}
-	if err := os.Mkdir(dirPath, 0755); err != nil {
+
+	err = os.Mkdir(dirPath, defaultDirPerm)
+	if err != nil {
 		panic(err)
 	}
 }
@@ -22,24 +32,32 @@ func saveStructToJsonFile(filePath string, data any) {
 	if err != nil {
 		panic(err)
 	}
-	if err := os.WriteFile(filePath, jsonData, 0644); err != nil {
+
+	err = os.WriteFile(filePath, jsonData, defaultFilePerm)
+	if err != nil {
 		panic(err)
 	}
 }
 
 func loadStructFromJsonFile[T any](filePath string) (T, error) {
-	if dir, err := os.Stat(filePath); !os.IsNotExist(err) {
+	dir, err := os.Stat(filePath)
+	if !os.IsNotExist(err) {
 		if dir.IsDir() {
 			return *new(T), os.ErrExist
 		}
 	}
+	// #nosec G304
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		return *new(T), err
+		return *new(T), fmt.Errorf("failed to read JSON file: %w", err)
 	}
+
 	var result T
-	if err := json.Unmarshal(data, &result); err != nil {
-		return *new(T), err
+
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		return *new(T), fmt.Errorf("failed to unmarshal JSON: %w", err)
 	}
+
 	return result, nil
 }

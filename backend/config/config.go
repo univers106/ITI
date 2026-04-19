@@ -10,22 +10,24 @@ import (
 )
 
 func ReadConfig(path string) Config {
+	// #nosec G304
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			slog.Warn("config.yaml not exist, creating example...")
-			data, err = createExample(path)
-			if err != nil {
-				panic("failed to create example config: " + err.Error())
-			}
 
+			data = createExample(path)
 		} else {
 			panic("something wrong with config.yaml file: " + err.Error())
 		}
 	}
+
 	answer := Config{}
-	if err := yaml.Unmarshal(data, &answer); err != nil {
+
+	err = yaml.Unmarshal(data, &answer)
+	if err != nil {
 		panic("failed to unmarshal config: " + err.Error())
 	}
+
 	return answer
 }

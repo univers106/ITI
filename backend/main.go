@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"log/slog"
+	"time"
 
 	gorillaSessions "github.com/gorilla/sessions"
 	"github.com/labstack/echo/v5"
@@ -20,42 +21,57 @@ func main() {
 	cfg := config.ReadConfig("config.yaml")
 
 	var db database.Database = filebased.NewFileBasedDatabase(cfg.DataDir)
-	if _, err := db.GetUserByLogin("test_user"); errors.Is(err, database.ErrUserNotFound) {
+
+	// временно
+
+	_, err := db.GetUserByLogin("test_user")
+	if errors.Is(err, database.ErrUserNotFound) {
+		//nolint
 		db.CreateUser("test_user", "Test User", "test_password")
 	}
-	if _, err := db.GetUserByLogin("test_admin"); errors.Is(err, database.ErrUserNotFound) {
+
+	_, err = db.GetUserByLogin("test_admin")
+	if errors.Is(err, database.ErrUserNotFound) {
+		//nolint
 		db.CreateUser("test_admin", "ADMIN", "test_password")
+
 		admin, err := db.GetUserByLogin("test_admin")
 		if err != nil {
 			panic(err)
 		}
+
+		//nolint
 		db.UserAddPermissions(admin.ID, database.PermSuperUser)
 	}
+
+	// конец временно
 
 	cookieStore := gorillaSessions.NewCookieStore([]byte(cfg.SessionKey))
 	cookieStore.Options.Domain = cfg.Domain
 	cookieStore.Options.Path = "/"
-	cookieStore.Options.MaxAge = 60 * 60 * 1
+	cookieStore.Options.MaxAge = int(time.Hour.Seconds())
 	mainSessionMiddleware := sessionsMiddleware.NewSessionsMiddleware(cookieStore)
 
-	e := echo.New()
+	echoServer := echo.New()
 
-	e.Use(echoMiddlewares.RequestLogger())
-	e.Use(echoMiddlewares.Recover())
-	e.Use(databaseMiddleware.NewDatabaseMiddleware(db))
+	echoServer.Use(echoMiddlewares.RequestLogger())
+	echoServer.Use(echoMiddlewares.Recover())
+	echoServer.Use(databaseMiddleware.NewDatabaseMiddleware(db))
 
-	apiGroup := e.Group("/api")
+	apiGroup := echoServer.Group("/api")
 	privateApi := apiGroup.Group("/private", mainSessionMiddleware)
 	privateApi.Use(sessionsMiddleware.OnlyUsersMiddleware)
+
 	publicApi := apiGroup.Group("/public")
 
 	privateApi.GET("/hello", private.GetHello)
-	privateApi.GET("/logout", private.PostLogut, mainSessionMiddleware)
+	privateApi.GET("/logout", private.PostLogout, mainSessionMiddleware)
 
 	publicApi.GET("/hello", public.GetHello)
 	publicApi.POST("/login", public.PostLogin, mainSessionMiddleware)
 
-	if err := e.Start(":8080"); err != nil {
+	err = echoServer.Start(":8080")
+	if err != nil {
 		slog.Error("failed to start server", "error", err)
 	}
 }

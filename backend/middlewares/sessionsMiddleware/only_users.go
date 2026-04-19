@@ -13,11 +13,19 @@ func OnlyUsersMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		user, err := GetUserFromSessionContext(c)
 		if err != nil {
 			if errors.Is(err, ErrUnauthorized) {
-				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "unauthorized. This endpoint requires authentication."})
+				return c.JSON(
+					http.StatusUnauthorized,
+					map[string]string{
+						"message": "unauthorized. This endpoint requires authentication.",
+					},
+				)
 			}
+
 			return err
 		}
+
 		c.Set("user", user)
+
 		return next(c)
 	}
 }

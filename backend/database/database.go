@@ -1,3 +1,7 @@
+// база данных сделана интерфейсом
+// в будующем будет реализована более правильная база данных, не на json
+// сейчас при аварийном заверешении программы, есть риск смерти всех данных
+
 package database
 
 import (
@@ -19,12 +23,12 @@ var (
 
 const (
 	PermUsersManipulation = "UsersManipulation"
-	PermSuperUser         = "SuperUser" //не стоит использовать такое в проде, сделал для удобной разработки
+	PermSuperUser         = "SuperUser" // не стоит использовать такое в проде, сделал для удобной разработки
 )
 
 type Database interface {
-	GetUserByID(int) (*User, error)
-	GetUserByLogin(string) (*User, error)
+	GetUserByID(id int) (*User, error)
+	GetUserByLogin(login string) (*User, error)
 	UserAuthentication(login string, password string) (*User, error)
 	CreateUser(login string, name string, password string) error
 	DeleteUser(id int) error
@@ -42,15 +46,16 @@ type Post struct {
 }
 
 type User struct {
-	ID          int      "json:\"id\""
-	Name        string   "json:\"name\""
-	Login       string   "json:\"login\""
-	Permissions []string "json:\"permissions\""
+	ID          int      `json:"id"`
+	Name        string   `json:"name"`
+	Login       string   `json:"login"`
+	Permissions []string `json:"permissions"`
 }
 
 func (u *User) HasPermission(permission string) bool {
 	if slices.Contains(u.Permissions, PermSuperUser) {
 		return true
 	}
+
 	return slices.Contains(u.Permissions, permission)
 }

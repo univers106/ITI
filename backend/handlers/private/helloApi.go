@@ -1,6 +1,7 @@
 package private
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
@@ -10,7 +11,8 @@ import (
 func GetHello(c *echo.Context) error {
 	user, err := sessionsMiddleware.GetUserFromContext(c)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get user from context: %w", err)
 	}
+
 	return c.JSON(http.StatusOK, "Hello "+user.Name+", you login is "+user.Login)
 }
