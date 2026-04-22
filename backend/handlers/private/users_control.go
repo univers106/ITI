@@ -1,7 +1,6 @@
 package private
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
@@ -13,7 +12,7 @@ import (
 func PostCreateUser(c *echo.Context) error {
 	user, err := sessionsMiddleware.GetUserFromContext(c)
 	if err != nil {
-		return fmt.Errorf("failed to get user from context: %w", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user from context")
 	}
 
 	if !user.HasPermission(database.PermUsersManipulation) {
@@ -22,27 +21,20 @@ func PostCreateUser(c *echo.Context) error {
 
 	db, err := databaseMiddleware.GetDatabase(c)
 	if err != nil {
-		return fmt.Errorf("failed to get database: %w", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get database")
 	}
 
 	loginValue := c.FormValue("login")
-	if loginValue == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "login value is null")
-	}
-
 	passwordValue := c.FormValue("password")
-	if passwordValue == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "password value is null")
-	}
-
 	nameValue := c.FormValue("name")
-	if nameValue == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "name value is null")
+
+	if loginValue == "" || nameValue == "" || passwordValue == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "some value is null")
 	}
 
 	err = db.CreateUser(loginValue, nameValue, passwordValue)
 	if err != nil {
-		return fmt.Errorf("failed to create user: %w", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to create user")
 	}
 
 	return c.JSON(http.StatusOK, "User created successfully")

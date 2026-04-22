@@ -1,7 +1,6 @@
 package public
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
@@ -12,26 +11,23 @@ import (
 func PostLogin(c *echo.Context) error {
 	session, err := sessionsMiddleware.GetAuthSessionFromContext(c)
 	if err != nil {
-		return fmt.Errorf("failed to get auth session: %w", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get session")
 	}
 
 	if !session.IsNew {
-		return c.JSON(http.StatusOK, map[string]string{"message": "ok, but you already logged in"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "you already logged in"})
 	}
 
 	loginValue := c.FormValue("login")
-	if loginValue == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "login value is null")
-	}
-
 	passwordValue := c.FormValue("password")
-	if passwordValue == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "password value is null")
+
+	if passwordValue == "" || loginValue == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "login or password value is null")
 	}
 
 	db, err := databaseMiddleware.GetDatabase(c)
 	if err != nil {
-		return fmt.Errorf("failed to get database: %w", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get database")
 	}
 
 	user, err := db.UserAuthentication(loginValue, passwordValue)
@@ -43,7 +39,7 @@ func PostLogin(c *echo.Context) error {
 
 	err = session.Save(c.Request(), c.Response())
 	if err != nil {
-		return fmt.Errorf("failed to save session: %w", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to save session")
 	}
 
 	return c.JSON(http.StatusOK, map[string]string{"message": "ok"})

@@ -65,7 +65,8 @@ func main() {
 	publicApi := apiGroup.Group("/public")
 
 	privateApi.GET("/hello", private.GetHello)
-	privateApi.GET("/logout", private.PostLogout, mainSessionMiddleware)
+	privateApi.GET("/logout", private.PostLogout)
+	privateApi.POST("/create-user", private.PostCreateUser)
 
 	publicApi.GET("/hello", public.GetHello)
 	publicApi.POST("/login", public.PostLogin, mainSessionMiddleware)
