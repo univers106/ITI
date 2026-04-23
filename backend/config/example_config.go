@@ -1,16 +1,15 @@
 package config
 
 import (
+	"crypto/rand"
 	"os"
 
-	"github.com/gorilla/securecookie"
 	"go.yaml.in/yaml/v4"
 )
 
 const (
-	defaultSessionKeySize             = 32
-	defaultDirPerm        os.FileMode = 0o750
-	defaultFilePerm       os.FileMode = 0o600
+	defaultDirPerm  os.FileMode = 0o750
+	defaultFilePerm os.FileMode = 0o600
 )
 
 func getExampleConfig() []byte {
@@ -21,7 +20,7 @@ func getExampleConfig() []byte {
 	var err error
 
 	example = Config{
-		SessionKey: string(securecookie.GenerateRandomKey(defaultSessionKeySize)),
+		SessionKey: rand.Text(),
 		Domain:     "localhost",
 		DataDir:    "./data",
 	}

@@ -3,15 +3,14 @@ package main
 import (
 	"errors"
 	"log/slog"
-	"time"
 
-	gorillaSessions "github.com/gorilla/sessions"
 	"github.com/labstack/echo/v5"
 	echoMiddlewares "github.com/labstack/echo/v5/middleware"
 	"github.com/univers106/ITI/config"
 	"github.com/univers106/ITI/database"
 	filebased "github.com/univers106/ITI/database/file_based"
 	"github.com/univers106/ITI/handlers/private"
+	userManipulation "github.com/univers106/ITI/handlers/private/user_manipulation"
 	"github.com/univers106/ITI/handlers/public"
 	"github.com/univers106/ITI/middlewares/databaseMiddleware"
 	"github.com/univers106/ITI/middlewares/sessionsMiddleware"
@@ -46,11 +45,8 @@ func main() {
 
 	// конец временно
 
-	cookieStore := gorillaSessions.NewCookieStore([]byte(cfg.SessionKey))
-	cookieStore.Options.Domain = cfg.Domain
-	cookieStore.Options.Path = "/"
-	cookieStore.Options.MaxAge = int(time.Hour.Seconds())
-	mainSessionMiddleware := sessionsMiddleware.NewSessionsMiddleware(cookieStore)
+	sessionStorage := sessionsMiddleware.NewSessionStorage()
+	mainSessionMiddleware := sessionsMiddleware.NewSessionsMiddleware(sessionStorage)
 
 	echoServer := echo.New()
 
@@ -66,7 +62,11 @@ func main() {
 
 	privateApi.GET("/hello", private.GetHello)
 	privateApi.GET("/logout", private.PostLogout)
-	privateApi.POST("/create-user", private.PostCreateUser)
+
+	userManipulationApi := privateApi.Group("/user-manipulation")
+	userManipulationApi.POST("/create", userManipulation.PostCreate)
+	userManipulationApi.POST("/delete", userManipulation.PostDelete)
+	userManipulationApi.POST("/change-password", userManipulation.PostChangePassword)
 
 	publicApi.GET("/hello", public.GetHello)
 	publicApi.POST("/login", public.PostLogin, mainSessionMiddleware)

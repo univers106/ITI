@@ -17,7 +17,6 @@ func NewDatabaseMiddleware(db database.Database) echo.MiddlewareFunc {
 	}
 }
 
-//nolint:ireturn
 func GetDatabase(c *echo.Context) (database.Database, error) {
 	database, err := echo.ContextGet[database.Database](c, "_database")
 	if err != nil {

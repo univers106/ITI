@@ -9,13 +9,17 @@ import (
 )
 
 func PostLogin(c *echo.Context) error {
-	session, err := sessionsMiddleware.GetAuthSessionFromContext(c)
+	sessionStorage, err := sessionsMiddleware.GetSessionStorage(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get session")
 	}
 
-	if !session.IsNew {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "you already logged in"})
+	_, err = sessionsMiddleware.GetKeyFromCookies(c)
+	if err == nil {
+		return echo.NewHTTPError(
+			http.StatusBadRequest,
+			"session already exists, try logging out first",
+		)
 	}
 
 	loginValue := c.FormValue("login")
@@ -35,12 +39,12 @@ func PostLogin(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 	}
 
-	session.Values["login"] = user.Login
-
-	err = session.Save(c.Request(), c.Response())
+	sessionKey, err := sessionStorage.NewSession(user.ID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to save session")
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to create session")
 	}
+
+	sessionsMiddleware.SetKeyToCookies(c, sessionKey)
 
 	return c.JSON(http.StatusOK, map[string]string{"message": "ok"})
 }

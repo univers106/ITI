@@ -9,7 +9,7 @@ import (
 )
 
 func GetHello(c *echo.Context) error {
-	user, err := sessionsMiddleware.GetUserFromContext(c)
+	user, err := sessionsMiddleware.GetUser(c)
 	if err != nil {
 		return fmt.Errorf("failed to get user from context: %w", err)
 	}

@@ -32,7 +32,11 @@ type Database interface {
 	UserAuthentication(login string, password string) (*User, error)
 	CreateUser(login string, name string, password string) error
 	DeleteUser(id int) error
-	ChangeUserPassword(user User, password string) error
+
+	ChangeUserPassword(user_id int, password string) error
+	ChangeUserLogin(user_id int, login string) error
+	ChangeUserName(user_id int, name string) error
+
 	UserAddPermissions(user_id int, permission string) error
 	UserRemovePermissions(user_id int, permission string) error
 	UserCheckPermission(user_id int, permission string) (bool, error)

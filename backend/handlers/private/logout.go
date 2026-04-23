@@ -1,7 +1,6 @@
 package private
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
@@ -9,21 +8,31 @@ import (
 )
 
 func PostLogout(c *echo.Context) error {
-	session, err := sessionsMiddleware.GetAuthSessionFromContext(c)
+	sessionStorage, err := sessionsMiddleware.GetSessionStorage(c)
 	if err != nil {
-		return fmt.Errorf("failed to get auth session from context: %w", err)
+		return echo.NewHTTPError(
+			http.StatusInternalServerError,
+			"failed to get auth session from context: "+err.Error(),
+		)
 	}
 
-	if session.IsNew {
-		return c.JSON(http.StatusOK, map[string]string{"message": "ok, but why?"})
-	}
-
-	session.Options.MaxAge = -1
-
-	err = session.Save(c.Request(), c.Response())
+	sessionKey, err := sessionsMiddleware.GetKeyFromCookies(c)
 	if err != nil {
-		return fmt.Errorf("failed to save auth session: %w", err)
+		return echo.NewHTTPError(
+			http.StatusInternalServerError,
+			"failed to get session key from cookies: "+err.Error(),
+		)
 	}
+
+	err = sessionStorage.DeleteSession(sessionKey)
+	if err != nil {
+		return echo.NewHTTPError(
+			http.StatusInternalServerError,
+			"failed to delete session: "+err.Error(),
+		)
+	}
+
+	sessionsMiddleware.DeleteCookies(c)
 
 	return c.JSON(http.StatusOK, map[string]string{"message": "ok"})
 }

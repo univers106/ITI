@@ -8,7 +8,7 @@ import (
 )
 
 type FileBasedDatabase struct {
-	users   []safeUser
+	users   map[int]safeUser
 	mu      sync.RWMutex
 	dirPath string
 }
@@ -17,13 +17,12 @@ func (f *FileBasedDatabase) GetUserByID(id int) (*database.User, error) {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
 
-	for _, user := range f.users {
-		if user.ID == id {
-			return user.GetUser(), nil
-		}
+	user, ok := f.users[id]
+	if !ok {
+		return nil, database.ErrUserNotFound
 	}
 
-	return nil, database.ErrUserNotFound
+	return user.GetUser(), nil
 }
 
 func (f *FileBasedDatabase) GetUserByLogin(login string) (*database.User, error) {
@@ -85,8 +84,13 @@ func (f *FileBasedDatabase) CreateUser(login string, name string, password strin
 	newUser := safeUser{User: database.User{Login: login, Name: name}}
 	newUser.SetPassword(password)
 
-	newUser.ID = len(f.users) + 1
-	f.users = append(f.users, newUser)
+	for id := range f.users {
+		if id >= newUser.ID {
+			newUser.ID = id + 1
+		}
+	}
+
+	f.users[newUser.ID] = newUser
 
 	return nil
 }
@@ -97,32 +101,64 @@ func (f *FileBasedDatabase) DeleteUser(userId int) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	for i, user := range f.users {
-		if user.ID == userId {
-			f.users = append(f.users[:i], f.users[i+1:]...)
-
-			return nil
-		}
+	if _, ok := f.users[userId]; !ok {
+		return database.ErrUserNotFound
 	}
 
-	return database.ErrUserNotFound
+	delete(f.users, userId)
+
+	return nil
 }
 
-func (f *FileBasedDatabase) ChangeUserPassword(user database.User, password string) error {
+func (f *FileBasedDatabase) ChangeUserPassword(user_id int, password string) error {
 	defer f.save()
 
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	for i, u := range f.users {
-		if u.ID == user.ID {
-			f.users[i].SetPassword(password)
-
-			return nil
-		}
+	user, ok := f.users[user_id]
+	if !ok {
+		return database.ErrUserNotFound
 	}
 
-	return database.ErrUserNotFound
+	user.SetPassword(password)
+	f.users[user_id] = user
+
+	return nil
+}
+
+func (f *FileBasedDatabase) ChangeUserLogin(user_id int, login string) error {
+	defer f.save()
+
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	user, ok := f.users[user_id]
+	if !ok {
+		return database.ErrUserNotFound
+	}
+
+	user.Login = login
+	f.users[user_id] = user
+
+	return nil
+}
+
+func (f *FileBasedDatabase) ChangeUserName(user_id int, name string) error {
+	defer f.save()
+
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	user, ok := f.users[user_id]
+	if !ok {
+		return database.ErrUserNotFound
+	}
+
+	user.Name = name
+	f.users[user_id] = user
+
+	return nil
 }
 
 func (f *FileBasedDatabase) UserAddPermissions(user_id int, permission string) error {
@@ -131,20 +167,19 @@ func (f *FileBasedDatabase) UserAddPermissions(user_id int, permission string) e
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	for i := range f.users {
-		user := &f.users[i]
-		if user.ID == user_id {
-			if slices.Contains(user.Permissions, permission) {
-				return database.ErrAlreadyExists
-			}
-
-			user.Permissions = append(user.Permissions, permission)
-
-			return nil
-		}
+	user, ok := f.users[user_id]
+	if !ok {
+		return database.ErrUserNotFound
 	}
 
-	return database.ErrUserNotFound
+	if slices.Contains(user.Permissions, permission) {
+		return database.ErrAlreadyExists
+	}
+
+	user.Permissions = append(user.Permissions, permission)
+	f.users[user_id] = user
+
+	return nil
 }
 
 func (f *FileBasedDatabase) UserRemovePermissions(user_id int, permission string) error {
@@ -153,39 +188,34 @@ func (f *FileBasedDatabase) UserRemovePermissions(user_id int, permission string
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	for i := range f.users {
-		user := &f.users[i]
-		if user.ID == user_id {
-			for i, p := range user.Permissions {
-				if p == permission {
-					user.Permissions = append(user.Permissions[:i], user.Permissions[i+1:]...)
-
-					return nil
-				}
-			}
-
-			return database.ErrPermissionNotFound
-		}
+	user, ok := f.users[user_id]
+	if !ok {
+		return database.ErrUserNotFound
 	}
 
-	return database.ErrUserNotFound
+	if !slices.Contains(user.Permissions, permission) {
+		return database.ErrPermissionNotFound
+	}
+
+	user.Permissions = slices.DeleteFunc(user.Permissions, func(p string) bool {
+		return p == permission
+	})
+
+	f.users[user_id] = user
+
+	return nil
 }
 
 func (f *FileBasedDatabase) UserCheckPermission(user_id int, permission string) (bool, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	for _, user := range f.users {
-		if user.ID == user_id {
-			if slices.Contains(user.Permissions, permission) {
-				return true, nil
-			}
-
-			return false, nil
-		}
+	user, ok := f.users[user_id]
+	if !ok {
+		return false, database.ErrUserNotFound
 	}
 
-	return false, database.ErrUserNotFound
+	return slices.Contains(user.Permissions, permission), nil
 }
 
 func NewFileBasedDatabase(dir string) *FileBasedDatabase {
@@ -194,9 +224,9 @@ func NewFileBasedDatabase(dir string) *FileBasedDatabase {
 
 	var err error
 
-	newUser.users, err = loadStructFromJsonFile[[]safeUser](dir + "/users.json")
+	newUser.users, err = loadStructFromJsonFile[map[int]safeUser](dir + "/users.json")
 	if err != nil {
-		newUser.users = []safeUser{}
+		newUser.users = map[int]safeUser{}
 	}
 
 	newUser.save()
