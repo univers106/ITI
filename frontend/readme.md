@@ -1,30 +1,35 @@
-# Frontend
+# WIP
+Для запуска npm run dev
+Для установки зависимостей npm install
 
-React + Vite client side rendering приложение
+Сейчас идёт пересмотр стэка
 
-## Стек
+На данный момент frontend скорее служит примером, а не частью сервиса
 
-- React
-- Vite
-- Tailwind CSS
-- React Router
-- Shadcn
-- Radix UI
 
-## Быстрый старт
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
-Установить зависимости:
-
-```bash
-npm install
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
-
-Запустить в режиме разработки:
-
-```bash
-npm run dev
-```
-
-## Примечание
-
-На данный момент ведётся разработка минимально рабочего прототипа, после завершения разработки backend будет рефакторинг
