@@ -4,19 +4,18 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
-import { ModeToggle } from "@/components/base/mode-toggle";
 
 /* ================== CONFIG ================== */
 
 const APP_CONFIG = {
-  siteName: "ИТИ-2027",
+  siteName: "ИТИ 2 версия!!",
   mobileBreakpoint: "md",
 };
 
 const NAV_ITEMS = [
   { label: "Главная", href: "/" },
   { label: "Результаты", href: "/results" },
-  { label: "О нас", href: "/news" },
+  { label: "О нас", href: "/about" },
 ] as const;
 
 /* ============================================ */
@@ -28,9 +27,7 @@ export default function Layout() {
   return (
     <div className="flex flex-col">
       <header className="border-b">
-        <div
-          className="container mx-auto flex items-center justify-between h-14 px-4 max-w-6xl"
-        >
+        <div className="container mx-auto flex items-center justify-between h-14 px-4 max-w-6xl">
           <Link to="/" className="text-base font-semibold">
             {APP_CONFIG.siteName}
           </Link>
@@ -57,14 +54,13 @@ export default function Layout() {
                           "rounded-md px-3 py-2 text-sm transition-colors",
                           isActive
                             ? "bg-primary text-primary-foreground"
-                            : "hover:bg-muted"
+                            : "hover:bg-muted",
                         )}
                       >
                         {item.label}
                       </Link>
                     );
                   })}
-                  <ModeToggle />
                 </nav>
               </SheetContent>
             </Sheet>
