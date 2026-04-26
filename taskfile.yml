@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+  build_all:
+    desc: build backend and frontend
+    deps: [build_frontend, build_backend]
+    failfast: true
+
+  build_frontend:
+    desc: build frontend
+    cmds:
+      - 'echo "todo: frontend builder"'
+
+  build_backend:
+    desc: build backend
+    dir: "./backend"
+    cmds:
+      - go build -o "../build/"
+
+  build_run:
+    desc: build_all and run it
+    aliases: [default]
+    deps: [build_all]
+    dir: build
+    cmds:
+      - ./ITI
+
+  backend_cover:
+    desc: run backend test coverage
+    dir: "./backend"
+    cmds:
+      - go test -coverprofile=coverage.out ./...
+      - go tool cover -html=coverage.out

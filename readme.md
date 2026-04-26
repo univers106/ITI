@@ -23,6 +23,11 @@
   * `features/<feature>` - ветки для совместных фичей (проверяет флоу `branches.yaml`)
 </details>
 
+## Сборка и прочее
+для частых задач проект использует утилиту [task](https://taskfile.dev):
+- для получения списка задач: `task --list`
+- для сборки `task build_all`
+- для сборки и запуска `task` (алиас для `task build_run`)
 
 ## Авторы
 1. Шестаков Вячеслав slavashestakov2005
