@@ -54,7 +54,7 @@ func SetKeyToCookies(c *echo.Context, sessionKey string) {
 	cookie.HttpOnly = true
 	cookie.Secure = true
 	cookie.SameSite = http.SameSiteStrictMode
-	cookie.MaxAge = int((time.Hour + sessionIdleTimeout).Seconds())
+	cookie.MaxAge = int((time.Hour + SessionIdleTimeout).Seconds())
 	c.SetCookie(cookie)
 }
 

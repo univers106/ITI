@@ -13,8 +13,8 @@ var (
 )
 
 const (
-	sessionTimeout     = 3 * time.Hour
-	sessionIdleTimeout = 10 * time.Minute
+	SessionTimeout     = 3 * time.Hour
+	SessionIdleTimeout = 10 * time.Minute
 )
 
 type SessionStorage interface {
@@ -24,7 +24,7 @@ type SessionStorage interface {
 	DeleteUserSessions(userId int) error
 }
 
-// далее реализация на map, если, у вас проект больше,
+// далее реализация на map, если, у вас сервис больше,
 // то стоит сделать реализацию на субд
 
 type SessionData struct {
@@ -49,7 +49,7 @@ func (m *MapBasedSessionStorage) GetIdFromSession(key string) (int, error) {
 	}
 
 	now := time.Now()
-	if now.After(data.Timeout) || now.After(data.LastVisit.Add(sessionIdleTimeout)) {
+	if now.After(data.Timeout) || now.After(data.LastVisit.Add(SessionIdleTimeout)) {
 		delete(m.sessions, key)
 
 		return 0, ErrSessionNotFound
@@ -75,7 +75,7 @@ func (m *MapBasedSessionStorage) NewSession(userId int) (string, error) {
 			m.sessions[key] = SessionData{
 				UserId:    userId,
 				CreatedAt: now,
-				Timeout:   now.Add(sessionTimeout),
+				Timeout:   now.Add(SessionTimeout),
 				LastVisit: now,
 			}
 

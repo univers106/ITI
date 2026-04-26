@@ -26,3 +26,10 @@ tasks:
     dir: build
     cmds:
       - ./ITI
+
+  backend_cover:
+    desc: run backend test coverage
+    dir: "./backend"
+    cmds:
+      - go test -coverprofile=coverage.out ./...
+      - go tool cover -html=coverage.out
