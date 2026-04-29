@@ -1,16 +1,20 @@
-package userManipulation
+package user_manipulation
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v5"
 	"github.com/univers106/ITI/database"
-	"github.com/univers106/ITI/middlewares/sessionsMiddleware"
+	"github.com/univers106/ITI/middlewares/sessions_middleware"
 )
 
+type changeNameRequest struct {
+	UserId int    `form:"userId"`
+	Name   string `form:"name"`
+}
+
 func PostChangeName(c *echo.Context) error {
-	_, db, httpErr := sessionsMiddleware.GetUserDbCheckPermision(
+	_, db, httpErr := sessions_middleware.GetUserDbCheckPermision(
 		c,
 		database.PermUsersManipulation,
 	)
@@ -18,19 +22,14 @@ func PostChangeName(c *echo.Context) error {
 		return httpErr
 	}
 
-	userIdValue := c.FormValue("userId")
-	nameValue := c.FormValue("name")
+	var request changeNameRequest
 
-	if nameValue == "" || userIdValue == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Some value is null")
-	}
-
-	userId, err := strconv.Atoi(userIdValue)
+	err := c.Bind(&request)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "invalid userId")
+		return echo.NewHTTPError(http.StatusBadRequest, "There is something wrong with the values")
 	}
 
-	err = db.ChangeUserName(userId, nameValue)
+	err = db.ChangeUserName(request.UserId, request.Name)
 	if err != nil {
 		return echo.NewHTTPError(
 			http.StatusInternalServerError,

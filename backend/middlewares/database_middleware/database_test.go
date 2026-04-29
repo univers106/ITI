@@ -1,4 +1,4 @@
-package databaseMiddleware_test
+package database_middleware_test
 
 import (
 	"errors"
@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/univers106/ITI/database"
-	dbMiddleware "github.com/univers106/ITI/middlewares/databaseMiddleware"
+	dbMiddleware "github.com/univers106/ITI/middlewares/database_middleware"
 )
 
 var errNotImplemented = errors.New("mock: not implemented")

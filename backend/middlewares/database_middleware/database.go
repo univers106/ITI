@@ -1,4 +1,4 @@
-package databaseMiddleware
+package database_middleware
 
 import (
 	"fmt"

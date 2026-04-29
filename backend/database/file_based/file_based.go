@@ -1,4 +1,4 @@
-package filebased
+package file_based
 
 import (
 	"slices"
@@ -207,8 +207,8 @@ func (f *FileBasedDatabase) UserRemovePermissions(user_id int, permission string
 }
 
 func (f *FileBasedDatabase) UserCheckPermission(user_id int, permission string) (bool, error) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
+	f.mu.RLock()
+	defer f.mu.RUnlock()
 
 	user, ok := f.users[user_id]
 	if !ok {

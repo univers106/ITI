@@ -5,11 +5,11 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v5"
-	"github.com/univers106/ITI/middlewares/sessionsMiddleware"
+	"github.com/univers106/ITI/middlewares/sessions_middleware"
 )
 
 func GetHello(c *echo.Context) error {
-	user, err := sessionsMiddleware.GetUser(c)
+	user, err := sessions_middleware.GetUser(c)
 	if err != nil {
 		return fmt.Errorf("failed to get user from context: %w", err)
 	}

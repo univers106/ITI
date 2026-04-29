@@ -1,4 +1,4 @@
-package sessionsMiddleware
+package sessions_middleware
 
 import (
 	"crypto/rand"

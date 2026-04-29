@@ -1,4 +1,4 @@
-package sessionsMiddleware
+package sessions_middleware
 
 import (
 	"errors"
@@ -8,7 +8,7 @@ import (
 
 	"github.com/labstack/echo/v5"
 	"github.com/univers106/ITI/database"
-	"github.com/univers106/ITI/middlewares/databaseMiddleware"
+	"github.com/univers106/ITI/middlewares/database_middleware"
 )
 
 const AuthSession = "auth"
@@ -96,7 +96,7 @@ func GetUserFromSession(c *echo.Context) (*database.User, error) {
 		)
 	}
 
-	db, err := databaseMiddleware.GetDatabase(c)
+	db, err := database_middleware.GetDatabase(c)
 	if err != nil {
 		return nil, echo.NewHTTPError(
 			http.StatusInternalServerError,

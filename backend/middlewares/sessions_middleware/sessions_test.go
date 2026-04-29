@@ -1,4 +1,4 @@
-package sessionsMiddleware_test
+package sessions_middleware_test
 
 import (
 	"context"
@@ -12,14 +12,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/univers106/ITI/database"
-	sessionsMiddleware "github.com/univers106/ITI/middlewares/sessionsMiddleware"
+	"github.com/univers106/ITI/middlewares/sessions_middleware"
 )
 
 func TestNewSessionsMiddleware(t *testing.T) {
 	t.Parallel()
 
-	store := sessionsMiddleware.NewSessionStorage()
-	middleware := sessionsMiddleware.NewSessionsMiddleware(store)
+	store := sessions_middleware.NewSessionStorage()
+	middleware := sessions_middleware.NewSessionsMiddleware(store)
 
 	e := echo.New()
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
@@ -27,7 +27,7 @@ func TestNewSessionsMiddleware(t *testing.T) {
 	c := e.NewContext(req, rec)
 
 	handler := middleware(func(c *echo.Context) error {
-		retrievedStore, err := sessionsMiddleware.GetSessionStorage(c)
+		retrievedStore, err := sessions_middleware.GetSessionStorage(c)
 		require.NoError(t, err)
 		assert.Equal(t, store, retrievedStore)
 
@@ -46,7 +46,7 @@ func TestGetSessionStorage_NotFound(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
-	_, err := sessionsMiddleware.GetSessionStorage(c)
+	_, err := sessions_middleware.GetSessionStorage(c)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to get session store")
 }
@@ -59,9 +59,9 @@ func TestGetKeyFromCookies_NoCookie(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
-	_, err := sessionsMiddleware.GetKeyFromCookies(c)
+	_, err := sessions_middleware.GetKeyFromCookies(c)
 	require.Error(t, err)
-	assert.Equal(t, sessionsMiddleware.ErrUnauthorized, err)
+	assert.Equal(t, sessions_middleware.ErrUnauthorized, err)
 }
 
 func TestGetKeyFromCookies_WithCookie(t *testing.T) {
@@ -74,7 +74,7 @@ func TestGetKeyFromCookies_WithCookie(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
-	key, err := sessionsMiddleware.GetKeyFromCookies(c)
+	key, err := sessions_middleware.GetKeyFromCookies(c)
 	require.NoError(t, err)
 	assert.Equal(t, "abc123", key)
 }
@@ -87,7 +87,7 @@ func TestSetKeyToCookies(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
-	sessionsMiddleware.SetKeyToCookies(c, "testkey")
+	sessions_middleware.SetKeyToCookies(c, "testkey")
 
 	cookies := rec.Result().Cookies()
 	assert.Len(t, cookies, 1)
@@ -108,7 +108,7 @@ func TestDeleteCookies(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
-	sessionsMiddleware.DeleteCookies(c)
+	sessions_middleware.DeleteCookies(c)
 
 	cookies := rec.Result().Cookies()
 	assert.Len(t, cookies, 1)
@@ -122,7 +122,7 @@ func TestDeleteCookies(t *testing.T) {
 func TestGetUserFromSession_Success(t *testing.T) {
 	t.Parallel()
 
-	store := sessionsMiddleware.NewSessionStorage()
+	store := sessions_middleware.NewSessionStorage()
 	db := &mockDatabase{
 		users: map[int]*database.User{
 			1: {ID: 1, Login: "user1", Name: "User One"},
@@ -142,7 +142,7 @@ func TestGetUserFromSession_Success(t *testing.T) {
 	c.Set("_session_storage", store)
 	c.Set("_database", db)
 
-	user, err := sessionsMiddleware.GetUserFromSession(c)
+	user, err := sessions_middleware.GetUserFromSession(c)
 	require.NoError(t, err)
 	assert.Equal(t, 1, user.ID)
 	assert.Equal(t, "user1", user.Login)
@@ -151,7 +151,7 @@ func TestGetUserFromSession_Success(t *testing.T) {
 func TestGetUserFromSession_NoCookie(t *testing.T) {
 	t.Parallel()
 
-	store := sessionsMiddleware.NewSessionStorage()
+	store := sessions_middleware.NewSessionStorage()
 	db := &mockDatabase{}
 
 	e := echo.New()
@@ -162,7 +162,7 @@ func TestGetUserFromSession_NoCookie(t *testing.T) {
 	c.Set("_session_storage", store)
 	c.Set("_database", db)
 
-	_, err := sessionsMiddleware.GetUserFromSession(c)
+	_, err := sessions_middleware.GetUserFromSession(c)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to get user from session")
 }
@@ -170,7 +170,7 @@ func TestGetUserFromSession_NoCookie(t *testing.T) {
 func TestGetUserFromSession_SessionNotFound(t *testing.T) {
 	t.Parallel()
 
-	store := sessionsMiddleware.NewSessionStorage()
+	store := sessions_middleware.NewSessionStorage()
 	db := &mockDatabase{}
 
 	e := echo.New()
@@ -183,7 +183,7 @@ func TestGetUserFromSession_SessionNotFound(t *testing.T) {
 	c.Set("_session_storage", store)
 	c.Set("_database", db)
 
-	_, err := sessionsMiddleware.GetUserFromSession(c)
+	_, err := sessions_middleware.GetUserFromSession(c)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to get user from session")
 }
@@ -191,7 +191,7 @@ func TestGetUserFromSession_SessionNotFound(t *testing.T) {
 func TestGetUserFromSession_DatabaseError(t *testing.T) {
 	t.Parallel()
 
-	store := sessionsMiddleware.NewSessionStorage()
+	store := sessions_middleware.NewSessionStorage()
 	db := &mockDatabase{
 		users: map[int]*database.User{},
 	}
@@ -209,7 +209,7 @@ func TestGetUserFromSession_DatabaseError(t *testing.T) {
 	context.Set("_session_storage", store)
 	context.Set("_database", db)
 
-	_, err = sessionsMiddleware.GetUserFromSession(context)
+	_, err = sessions_middleware.GetUserFromSession(context)
 	require.Error(t, err)
 
 	var httpErr *echo.HTTPError
@@ -223,7 +223,7 @@ func TestGetUserFromSession_DatabaseError(t *testing.T) {
 func TestGetUserFromSession_NoDatabaseInContext(t *testing.T) {
 	t.Parallel()
 
-	store := sessionsMiddleware.NewSessionStorage()
+	store := sessions_middleware.NewSessionStorage()
 	key, _ := store.NewSession(1)
 
 	e := echo.New()
@@ -235,7 +235,7 @@ func TestGetUserFromSession_NoDatabaseInContext(t *testing.T) {
 
 	c.Set("_session_storage", store)
 
-	_, err := sessionsMiddleware.GetUserFromSession(c)
+	_, err := sessions_middleware.GetUserFromSession(c)
 	require.Error(t, err)
 
 	var httpErr *echo.HTTPError
@@ -254,7 +254,7 @@ func TestGetUserFromSession_NoSessionStorageInContext(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
-	_, err := sessionsMiddleware.GetUserFromSession(c)
+	_, err := sessions_middleware.GetUserFromSession(c)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to get user from session")
 }

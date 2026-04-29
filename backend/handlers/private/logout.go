@@ -4,11 +4,11 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v5"
-	"github.com/univers106/ITI/middlewares/sessionsMiddleware"
+	"github.com/univers106/ITI/middlewares/sessions_middleware"
 )
 
 func PostLogout(c *echo.Context) error {
-	sessionStorage, err := sessionsMiddleware.GetSessionStorage(c)
+	sessionStorage, err := sessions_middleware.GetSessionStorage(c)
 	if err != nil {
 		return echo.NewHTTPError(
 			http.StatusInternalServerError,
@@ -16,7 +16,7 @@ func PostLogout(c *echo.Context) error {
 		)
 	}
 
-	sessionKey, err := sessionsMiddleware.GetKeyFromCookies(c)
+	sessionKey, err := sessions_middleware.GetKeyFromCookies(c)
 	if err != nil {
 		return echo.NewHTTPError(
 			http.StatusInternalServerError,
@@ -32,7 +32,7 @@ func PostLogout(c *echo.Context) error {
 		)
 	}
 
-	sessionsMiddleware.DeleteCookies(c)
+	sessions_middleware.DeleteCookies(c)
 
 	return c.JSON(http.StatusOK, map[string]string{"message": "ok"})
 }

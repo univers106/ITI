@@ -1,4 +1,4 @@
-package filebased
+package file_based
 
 import (
 	"encoding/json"

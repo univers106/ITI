@@ -1,15 +1,21 @@
-package userManipulation
+package user_manipulation
 
 import (
 	"net/http"
 
 	"github.com/labstack/echo/v5"
 	"github.com/univers106/ITI/database"
-	"github.com/univers106/ITI/middlewares/sessionsMiddleware"
+	"github.com/univers106/ITI/middlewares/sessions_middleware"
 )
 
+type createUserRequest struct {
+	Login    string `form:"login"`
+	Name     string `form:"name"`
+	Password string `form:"password"`
+}
+
 func PostCreate(c *echo.Context) error {
-	_, db, httpErr := sessionsMiddleware.GetUserDbCheckPermision(
+	_, db, httpErr := sessions_middleware.GetUserDbCheckPermision(
 		c,
 		database.PermUsersManipulation,
 	)
@@ -17,15 +23,14 @@ func PostCreate(c *echo.Context) error {
 		return httpErr
 	}
 
-	loginValue := c.FormValue("login")
-	passwordValue := c.FormValue("password")
-	nameValue := c.FormValue("name")
+	var request createUserRequest
 
-	if loginValue == "" || nameValue == "" || passwordValue == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "some value is null")
+	err := c.Bind(&request)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "There is something wrong with the values")
 	}
 
-	err := db.CreateUser(loginValue, nameValue, passwordValue)
+	err = db.CreateUser(request.Login, request.Name, request.Password)
 	if err != nil {
 		return echo.NewHTTPError(
 			http.StatusInternalServerError,

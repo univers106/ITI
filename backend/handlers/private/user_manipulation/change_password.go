@@ -1,16 +1,20 @@
-package userManipulation
+package user_manipulation
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v5"
 	"github.com/univers106/ITI/database"
-	"github.com/univers106/ITI/middlewares/sessionsMiddleware"
+	"github.com/univers106/ITI/middlewares/sessions_middleware"
 )
 
+type changePasswordRequest struct {
+	UserId   int    `form:"userId"`
+	Password string `form:"password"`
+}
+
 func PostChangePassword(c *echo.Context) error {
-	_, db, httpErr := sessionsMiddleware.GetUserDbCheckPermision(
+	_, db, httpErr := sessions_middleware.GetUserDbCheckPermision(
 		c,
 		database.PermUsersManipulation,
 	)
@@ -18,19 +22,14 @@ func PostChangePassword(c *echo.Context) error {
 		return httpErr
 	}
 
-	userIdValue := c.FormValue("userId")
-	passwordValue := c.FormValue("password")
+	var request changePasswordRequest
 
-	if passwordValue == "" || userIdValue == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Some value is null")
-	}
-
-	userId, err := strconv.Atoi(userIdValue)
+	err := c.Bind(&request)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "invalid userId")
+		return echo.NewHTTPError(http.StatusBadRequest, "There is something wrong with the values")
 	}
 
-	err = db.ChangeUserPassword(userId, passwordValue)
+	err = db.ChangeUserPassword(request.UserId, request.Password)
 	if err != nil {
 		return echo.NewHTTPError(
 			http.StatusInternalServerError,

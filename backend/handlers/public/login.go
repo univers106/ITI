@@ -4,17 +4,17 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v5"
-	"github.com/univers106/ITI/middlewares/databaseMiddleware"
-	"github.com/univers106/ITI/middlewares/sessionsMiddleware"
+	"github.com/univers106/ITI/middlewares/database_middleware"
+	"github.com/univers106/ITI/middlewares/sessions_middleware"
 )
 
 func PostLogin(c *echo.Context) error {
-	sessionStorage, err := sessionsMiddleware.GetSessionStorage(c)
+	sessionStorage, err := sessions_middleware.GetSessionStorage(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get session")
 	}
 
-	_, err = sessionsMiddleware.GetKeyFromCookies(c)
+	_, err = sessions_middleware.GetKeyFromCookies(c)
 	if err == nil {
 		return echo.NewHTTPError(
 			http.StatusBadRequest,
@@ -29,7 +29,7 @@ func PostLogin(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "login or password value is null")
 	}
 
-	db, err := databaseMiddleware.GetDatabase(c)
+	db, err := database_middleware.GetDatabase(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get database")
 	}
@@ -44,7 +44,7 @@ func PostLogin(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to create session")
 	}
 
-	sessionsMiddleware.SetKeyToCookies(c, sessionKey)
+	sessions_middleware.SetKeyToCookies(c, sessionKey)
 
 	return c.JSON(http.StatusOK, map[string]string{"message": "ok"})
 }

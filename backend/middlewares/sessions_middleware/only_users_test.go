@@ -1,4 +1,4 @@
-package sessionsMiddleware_test
+package sessions_middleware_test
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/univers106/ITI/database"
-	sessionsMiddleware "github.com/univers106/ITI/middlewares/sessionsMiddleware"
+	"github.com/univers106/ITI/middlewares/sessions_middleware"
 )
 
 var errNotImplemented = errors.New("mock: not implemented")
@@ -78,7 +78,7 @@ func (m *mockDatabase) UserCheckPermission(user_id int, permission string) (bool
 func TestOnlyUsersMiddleware_Success(t *testing.T) {
 	t.Parallel()
 
-	store := sessionsMiddleware.NewSessionStorage()
+	store := sessions_middleware.NewSessionStorage()
 	userId := 1
 	key, err := store.NewSession(userId)
 	require.NoError(t, err)
@@ -101,8 +101,8 @@ func TestOnlyUsersMiddleware_Success(t *testing.T) {
 
 	var capturedUser *database.User
 
-	handler := sessionsMiddleware.OnlyUsersMiddleware(func(c *echo.Context) error {
-		user, err := sessionsMiddleware.GetUser(c)
+	handler := sessions_middleware.OnlyUsersMiddleware(func(c *echo.Context) error {
+		user, err := sessions_middleware.GetUser(c)
 		require.NoError(t, err)
 		assert.Equal(t, userId, user.ID)
 		capturedUser = user
@@ -119,7 +119,7 @@ func TestOnlyUsersMiddleware_Success(t *testing.T) {
 func TestOnlyUsersMiddleware_NoCookie(t *testing.T) {
 	t.Parallel()
 
-	store := sessionsMiddleware.NewSessionStorage()
+	store := sessions_middleware.NewSessionStorage()
 	db := &mockDatabase{}
 
 	e := echo.New()
@@ -130,7 +130,7 @@ func TestOnlyUsersMiddleware_NoCookie(t *testing.T) {
 	c.Set("_session_storage", store)
 	c.Set("_database", db)
 
-	handler := sessionsMiddleware.OnlyUsersMiddleware(func(c *echo.Context) error {
+	handler := sessions_middleware.OnlyUsersMiddleware(func(c *echo.Context) error {
 		t.Fatal("should not be called")
 
 		return nil
@@ -150,7 +150,7 @@ func TestOnlyUsersMiddleware_NoCookie(t *testing.T) {
 func TestOnlyUsersMiddleware_SessionNotFound(t *testing.T) {
 	t.Parallel()
 
-	store := sessionsMiddleware.NewSessionStorage()
+	store := sessions_middleware.NewSessionStorage()
 	db := &mockDatabase{}
 
 	e := echo.New()
@@ -163,7 +163,7 @@ func TestOnlyUsersMiddleware_SessionNotFound(t *testing.T) {
 	c.Set("_session_storage", store)
 	c.Set("_database", db)
 
-	handler := sessionsMiddleware.OnlyUsersMiddleware(func(c *echo.Context) error {
+	handler := sessions_middleware.OnlyUsersMiddleware(func(c *echo.Context) error {
 		t.Fatal("should not be called")
 
 		return nil
@@ -176,7 +176,7 @@ func TestOnlyUsersMiddleware_SessionNotFound(t *testing.T) {
 func TestOnlyUsersMiddleware_DatabaseError(t *testing.T) {
 	t.Parallel()
 
-	store := sessionsMiddleware.NewSessionStorage()
+	store := sessions_middleware.NewSessionStorage()
 	key, _ := store.NewSession(999)
 	db := &mockDatabase{users: map[int]*database.User{}}
 
@@ -191,7 +191,7 @@ func TestOnlyUsersMiddleware_DatabaseError(t *testing.T) {
 	c.Set("_session_storage", store)
 	c.Set("_database", db)
 
-	handler := sessionsMiddleware.OnlyUsersMiddleware(func(c *echo.Context) error {
+	handler := sessions_middleware.OnlyUsersMiddleware(func(c *echo.Context) error {
 		t.Fatal("should not be called")
 
 		return nil
@@ -215,7 +215,7 @@ func TestGetUser_Success(t *testing.T) {
 	expectedUser := &database.User{ID: 5, Login: "test"}
 	c.Set("user", expectedUser)
 
-	user, err := sessionsMiddleware.GetUser(c)
+	user, err := sessions_middleware.GetUser(c)
 	require.NoError(t, err)
 	assert.Equal(t, expectedUser, user)
 }
@@ -226,7 +226,7 @@ func TestGetUser_NotFound(t *testing.T) {
 	e := echo.New()
 	c := e.NewContext(nil, nil)
 
-	_, err := sessionsMiddleware.GetUser(c)
+	_, err := sessions_middleware.GetUser(c)
 	require.Error(t, err)
 }
 
@@ -244,7 +244,7 @@ func TestGetUserDbCheckPermision_Success(t *testing.T) {
 	db := &mockDatabase{}
 	c.Set("_database", db)
 
-	retrievedUser, retrievedDb, httpErr := sessionsMiddleware.GetUserDbCheckPermision(
+	retrievedUser, retrievedDb, httpErr := sessions_middleware.GetUserDbCheckPermision(
 		c,
 		"UsersManipulation",
 	)
@@ -261,7 +261,7 @@ func TestGetUserDbCheckPermision_NoUserInContext(t *testing.T) {
 	db := &mockDatabase{}
 	c.Set("_database", db)
 
-	_, _, httpErr := sessionsMiddleware.GetUserDbCheckPermision(c, "UsersManipulation")
+	_, _, httpErr := sessions_middleware.GetUserDbCheckPermision(c, "UsersManipulation")
 	assert.NotNil(t, httpErr)
 	assert.Equal(t, http.StatusInternalServerError, httpErr.Code)
 	assert.Contains(t, httpErr.Message, "failed to get user from context")
@@ -281,7 +281,7 @@ func TestGetUserDbCheckPermision_NoPermission(t *testing.T) {
 	db := &mockDatabase{}
 	c.Set("_database", db)
 
-	_, _, httpErr := sessionsMiddleware.GetUserDbCheckPermision(c, "UsersManipulation")
+	_, _, httpErr := sessions_middleware.GetUserDbCheckPermision(c, "UsersManipulation")
 	assert.NotNil(t, httpErr)
 	assert.Equal(t, http.StatusForbidden, httpErr.Code)
 	assert.Contains(t, httpErr.Message, "You do not have permission")
@@ -303,7 +303,7 @@ func TestGetUserDbCheckPermision_SuperUserBypass(t *testing.T) {
 	db := &mockDatabase{}
 	c.Set("_database", db)
 
-	retrievedUser, retrievedDb, httpErr := sessionsMiddleware.GetUserDbCheckPermision(
+	retrievedUser, retrievedDb, httpErr := sessions_middleware.GetUserDbCheckPermision(
 		c,
 		"UsersManipulation",
 	)
@@ -323,7 +323,7 @@ func TestGetUserDbCheckPermision_NoDatabaseInContext(t *testing.T) {
 	}
 	c.Set("user", user)
 
-	_, _, httpErr := sessionsMiddleware.GetUserDbCheckPermision(c, "UsersManipulation")
+	_, _, httpErr := sessions_middleware.GetUserDbCheckPermision(c, "UsersManipulation")
 	assert.NotNil(t, httpErr)
 	assert.Equal(t, http.StatusInternalServerError, httpErr.Code)
 	assert.Contains(t, httpErr.Message, "failed to get database")

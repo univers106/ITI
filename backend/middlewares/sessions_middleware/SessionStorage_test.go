@@ -1,24 +1,24 @@
-package sessionsMiddleware_test
+package sessions_middleware_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	sessionsMiddleware "github.com/univers106/ITI/middlewares/sessionsMiddleware"
+	"github.com/univers106/ITI/middlewares/sessions_middleware"
 )
 
 func TestNewSessionStorage(t *testing.T) {
 	t.Parallel()
 
-	storage := sessionsMiddleware.NewSessionStorage()
+	storage := sessions_middleware.NewSessionStorage()
 	assert.NotNil(t, storage)
 }
 
 func TestSessionStorage_NewSession(t *testing.T) {
 	t.Parallel()
 
-	storage := sessionsMiddleware.NewSessionStorage()
+	storage := sessions_middleware.NewSessionStorage()
 	userId := 42
 
 	key, err := storage.NewSession(userId)
@@ -33,17 +33,17 @@ func TestSessionStorage_NewSession(t *testing.T) {
 func TestSessionStorage_GetIdFromSession_NotFound(t *testing.T) {
 	t.Parallel()
 
-	storage := sessionsMiddleware.NewSessionStorage()
+	storage := sessions_middleware.NewSessionStorage()
 
 	_, err := storage.GetIdFromSession("nonexistent")
 	require.Error(t, err)
-	assert.Equal(t, sessionsMiddleware.ErrSessionNotFound, err)
+	assert.Equal(t, sessions_middleware.ErrSessionNotFound, err)
 }
 
 func TestSessionStorage_DeleteSession(t *testing.T) {
 	t.Parallel()
 
-	storage := sessionsMiddleware.NewSessionStorage()
+	storage := sessions_middleware.NewSessionStorage()
 	userId := 42
 	key, _ := storage.NewSession(userId)
 
@@ -52,23 +52,23 @@ func TestSessionStorage_DeleteSession(t *testing.T) {
 
 	_, err = storage.GetIdFromSession(key)
 	require.Error(t, err)
-	assert.Equal(t, sessionsMiddleware.ErrSessionNotFound, err)
+	assert.Equal(t, sessions_middleware.ErrSessionNotFound, err)
 }
 
 func TestSessionStorage_DeleteSession_NotFound(t *testing.T) {
 	t.Parallel()
 
-	storage := sessionsMiddleware.NewSessionStorage()
+	storage := sessions_middleware.NewSessionStorage()
 
 	err := storage.DeleteSession("nonexistent")
 	require.Error(t, err)
-	assert.Equal(t, sessionsMiddleware.ErrSessionNotFound, err)
+	assert.Equal(t, sessions_middleware.ErrSessionNotFound, err)
 }
 
 func TestSessionStorage_DeleteUserSessions(t *testing.T) {
 	t.Parallel()
 
-	storage := sessionsMiddleware.NewSessionStorage()
+	storage := sessions_middleware.NewSessionStorage()
 	userId1 := 1
 	userId2 := 2
 

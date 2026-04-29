@@ -8,18 +8,18 @@ import (
 	echoMiddlewares "github.com/labstack/echo/v5/middleware"
 	"github.com/univers106/ITI/config"
 	"github.com/univers106/ITI/database"
-	filebased "github.com/univers106/ITI/database/file_based"
+	"github.com/univers106/ITI/database/file_based"
 	"github.com/univers106/ITI/handlers/private"
-	userManipulation "github.com/univers106/ITI/handlers/private/user_manipulation"
+	"github.com/univers106/ITI/handlers/private/user_manipulation"
 	"github.com/univers106/ITI/handlers/public"
-	"github.com/univers106/ITI/middlewares/databaseMiddleware"
-	"github.com/univers106/ITI/middlewares/sessionsMiddleware"
+	"github.com/univers106/ITI/middlewares/database_middleware"
+	"github.com/univers106/ITI/middlewares/sessions_middleware"
 )
 
 func main() {
 	cfg := config.ReadConfig("config.yaml")
 
-	var db database.Database = filebased.NewFileBasedDatabase(cfg.DataDir)
+	var db database.Database = file_based.NewFileBasedDatabase(cfg.DataDir)
 
 	// временно
 
@@ -45,18 +45,18 @@ func main() {
 
 	// конец временно
 
-	sessionStorage := sessionsMiddleware.NewSessionStorage()
-	mainSessionMiddleware := sessionsMiddleware.NewSessionsMiddleware(sessionStorage)
+	sessionStorage := sessions_middleware.NewSessionStorage()
+	mainSessionMiddleware := sessions_middleware.NewSessionsMiddleware(sessionStorage)
 
 	echoServer := echo.New()
 
 	echoServer.Use(echoMiddlewares.RequestLogger())
 	echoServer.Use(echoMiddlewares.Recover())
-	echoServer.Use(databaseMiddleware.NewDatabaseMiddleware(db))
+	echoServer.Use(database_middleware.NewDatabaseMiddleware(db))
 
 	apiGroup := echoServer.Group("/api")
 	privateApi := apiGroup.Group("/private", mainSessionMiddleware)
-	privateApi.Use(sessionsMiddleware.OnlyUsersMiddleware)
+	privateApi.Use(sessions_middleware.OnlyUsersMiddleware)
 
 	publicApi := apiGroup.Group("/public")
 
@@ -64,9 +64,9 @@ func main() {
 	privateApi.GET("/logout", private.PostLogout)
 
 	userManipulationApi := privateApi.Group("/user-manipulation")
-	userManipulationApi.POST("/create", userManipulation.PostCreate)
-	userManipulationApi.POST("/delete", userManipulation.PostDelete)
-	userManipulationApi.POST("/change-password", userManipulation.PostChangePassword)
+	userManipulationApi.POST("/create", user_manipulation.PostCreate)
+	userManipulationApi.POST("/delete", user_manipulation.PostDelete)
+	userManipulationApi.POST("/change-password", user_manipulation.PostChangePassword)
 
 	publicApi.GET("/hello", public.GetHello)
 	publicApi.POST("/login", public.PostLogin, mainSessionMiddleware)

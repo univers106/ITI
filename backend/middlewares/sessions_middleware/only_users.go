@@ -1,4 +1,4 @@
-package sessionsMiddleware
+package sessions_middleware
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo/v5"
 	"github.com/univers106/ITI/database"
-	"github.com/univers106/ITI/middlewares/databaseMiddleware"
+	"github.com/univers106/ITI/middlewares/database_middleware"
 )
 
 func OnlyUsersMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
@@ -52,7 +52,7 @@ func GetUserDbCheckPermision(
 		)
 	}
 
-	db, err := databaseMiddleware.GetDatabase(c)
+	db, err := database_middleware.GetDatabase(c)
 	if err != nil {
 		return nil, nil, echo.NewHTTPError(http.StatusInternalServerError, "failed to get database")
 	}

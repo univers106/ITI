@@ -1,4 +1,4 @@
-package userManipulation
+package user_manipulation
 
 import (
 	"net/http"
@@ -6,11 +6,11 @@ import (
 
 	"github.com/labstack/echo/v5"
 	"github.com/univers106/ITI/database"
-	"github.com/univers106/ITI/middlewares/sessionsMiddleware"
+	"github.com/univers106/ITI/middlewares/sessions_middleware"
 )
 
 func PostDelete(c *echo.Context) error {
-	_, db, httpErr := sessionsMiddleware.GetUserDbCheckPermision(
+	_, db, httpErr := sessions_middleware.GetUserDbCheckPermision(
 		c,
 		database.PermUsersManipulation,
 	)
@@ -28,7 +28,7 @@ func PostDelete(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid userId")
 	}
 
-	sessionStorage, err := sessionsMiddleware.GetSessionStorage(c)
+	sessionStorage, err := sessions_middleware.GetSessionStorage(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get session storage")
 	}
