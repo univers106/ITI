@@ -15,12 +15,13 @@ linters:
     - wsl
     - ireturn
     - funcorder
+    - interfacebloat
 
   settings:
     wrapcheck:
       ignore-sigs:
-        - github.com/labstack/echo/v5.(*Context).JSON
         - func (*github.com/labstack/echo/v5.Context).JSON(code int, i any) (err error)
+        - func (*github.com/labstack/echo/v5.Context).NoContent(code int) error
         - fmt.Errorf
         - errors.New
         - func (github.com/gorilla/sessions.Store).Get(r *net/http.Request, name string) (*github.com/gorilla/sessions.Session, error)
