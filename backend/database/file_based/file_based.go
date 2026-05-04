@@ -110,64 +110,64 @@ func (f *FileBasedDatabase) DeleteUser(userId int) error {
 	return nil
 }
 
-func (f *FileBasedDatabase) ChangeUserPassword(user_id int, password string) error {
+func (f *FileBasedDatabase) ChangeUserPassword(userId int, password string) error {
 	defer f.save()
 
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	user, ok := f.users[user_id]
+	user, ok := f.users[userId]
 	if !ok {
 		return database.ErrUserNotFound
 	}
 
 	user.SetPassword(password)
-	f.users[user_id] = user
+	f.users[userId] = user
 
 	return nil
 }
 
-func (f *FileBasedDatabase) ChangeUserLogin(user_id int, login string) error {
+func (f *FileBasedDatabase) ChangeUserLogin(userId int, login string) error {
 	defer f.save()
 
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	user, ok := f.users[user_id]
+	user, ok := f.users[userId]
 	if !ok {
 		return database.ErrUserNotFound
 	}
 
 	user.Login = login
-	f.users[user_id] = user
+	f.users[userId] = user
 
 	return nil
 }
 
-func (f *FileBasedDatabase) ChangeUserName(user_id int, name string) error {
+func (f *FileBasedDatabase) ChangeUserName(userId int, name string) error {
 	defer f.save()
 
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	user, ok := f.users[user_id]
+	user, ok := f.users[userId]
 	if !ok {
 		return database.ErrUserNotFound
 	}
 
 	user.Name = name
-	f.users[user_id] = user
+	f.users[userId] = user
 
 	return nil
 }
 
-func (f *FileBasedDatabase) UserAddPermissions(user_id int, permission string) error {
+func (f *FileBasedDatabase) UserAddPermissions(userId int, permission string) error {
 	defer f.save()
 
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	user, ok := f.users[user_id]
+	user, ok := f.users[userId]
 	if !ok {
 		return database.ErrUserNotFound
 	}
@@ -177,18 +177,18 @@ func (f *FileBasedDatabase) UserAddPermissions(user_id int, permission string) e
 	}
 
 	user.Permissions = append(user.Permissions, permission)
-	f.users[user_id] = user
+	f.users[userId] = user
 
 	return nil
 }
 
-func (f *FileBasedDatabase) UserRemovePermissions(user_id int, permission string) error {
+func (f *FileBasedDatabase) UserRemovePermissions(userId int, permission string) error {
 	defer f.save()
 
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	user, ok := f.users[user_id]
+	user, ok := f.users[userId]
 	if !ok {
 		return database.ErrUserNotFound
 	}
@@ -201,16 +201,16 @@ func (f *FileBasedDatabase) UserRemovePermissions(user_id int, permission string
 		return p == permission
 	})
 
-	f.users[user_id] = user
+	f.users[userId] = user
 
 	return nil
 }
 
-func (f *FileBasedDatabase) UserCheckPermission(user_id int, permission string) (bool, error) {
+func (f *FileBasedDatabase) UserCheckPermission(userId int, permission string) (bool, error) {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
 
-	user, ok := f.users[user_id]
+	user, ok := f.users[userId]
 	if !ok {
 		return false, database.ErrUserNotFound
 	}

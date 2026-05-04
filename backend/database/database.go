@@ -33,13 +33,13 @@ type Database interface {
 	CreateUser(login string, name string, password string) error
 	DeleteUser(id int) error
 
-	ChangeUserPassword(user_id int, password string) error
-	ChangeUserLogin(user_id int, login string) error
-	ChangeUserName(user_id int, name string) error
+	ChangeUserPassword(userId int, password string) error
+	ChangeUserLogin(userId int, login string) error
+	ChangeUserName(userId int, name string) error
 
-	UserAddPermissions(user_id int, permission string) error
-	UserRemovePermissions(user_id int, permission string) error
-	UserCheckPermission(user_id int, permission string) (bool, error)
+	UserAddPermissions(userId int, permission string) error
+	UserRemovePermissions(userId int, permission string) error
+	UserCheckPermission(userId int, permission string) (bool, error)
 }
 
 type Post struct {
