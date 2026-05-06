@@ -12,6 +12,7 @@ React + Vite client side rendering приложение
 - Radix UI
 
 ## Быстрый старт
+все команды выполнять в директории frontend
 
 Установить зависимости:
 
