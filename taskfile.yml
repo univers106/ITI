@@ -10,8 +10,9 @@ tasks:
 
   build_frontend:
     desc: build frontend
+    dir: "./frontend"
     cmds:
-      - 'echo "todo: frontend builder"'
+      - npm run build
 
   build_backend:
     desc: build backend

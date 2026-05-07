@@ -4,4 +4,6 @@ type Config struct {
 	SessionKey string `yaml:"session_key"`
 	Domain     string `yaml:"domain"`
 	DataDir    string `yaml:"data_dir"`
+	Port       int    `yaml:"server_port"`
+	Address    string `yaml:"server_address"`
 }

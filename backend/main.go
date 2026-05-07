@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 	echoMiddlewares "github.com/labstack/echo/v5/middleware"
 	"github.com/univers106/ITI/config"
 	"github.com/univers106/ITI/database"
@@ -49,6 +50,10 @@ func main() {
 	mainSessionMiddleware := sessions_middleware.NewSessionsMiddleware(sessionStorage)
 
 	echoServer := echo.New()
+	echoServer.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:8080", "http://localhost:5173"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
 
 	echoServer.Use(echoMiddlewares.RequestLogger())
 	echoServer.Use(echoMiddlewares.Recover())
@@ -58,8 +63,6 @@ func main() {
 	privateApi := apiGroup.Group("/private", mainSessionMiddleware)
 	privateApi.Use(sessions_middleware.OnlyUsersMiddleware)
 
-	publicApi := apiGroup.Group("/public")
-
 	privateApi.GET("/hello", private.GetHello)
 	privateApi.GET("/logout", private.PostLogout)
 
@@ -68,8 +71,23 @@ func main() {
 	userManipulationApi.POST("/delete", user_manipulation.PostDelete)
 	userManipulationApi.POST("/change-password", user_manipulation.PostChangePassword)
 
+	privateApi.GET("/*", func(c *echo.Context) error {
+		return echo.ErrNotFound
+	})
+
+	publicApi := apiGroup.Group("/public")
+
 	publicApi.GET("/hello", public.GetHello)
 	publicApi.POST("/login", public.PostLogin, mainSessionMiddleware)
+
+	publicApi.GET("/*", func(c *echo.Context) error {
+		return echo.ErrNotFound
+	})
+
+	echoServer.Static("/static", "static")
+	echoServer.GET("/*", func(c *echo.Context) error {
+		return c.File("index.html")
+	})
 
 	err = echoServer.Start(":8080")
 	if err != nil {

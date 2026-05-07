@@ -23,6 +23,8 @@ func getExampleConfig() []byte {
 		SessionKey: rand.Text(),
 		Domain:     "localhost",
 		DataDir:    "./data",
+		Port:       8080,
+		Address:    "localhost",
 	}
 
 	data, err = yaml.Marshal(example)

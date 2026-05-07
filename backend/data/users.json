@@ -1,0 +1,20 @@
+{
+ "0": {
+  "id": 0,
+  "name": "Test User",
+  "login": "test_user",
+  "permissions": null,
+  "passwordHash": "TaOzTJSrAABDK511umazxfkaXGHHAYhHmYGeY02rHjs=",
+  "passwordSalt": "r2dxbvtI1nZIGg0G4D3oaA=="
+ },
+ "1": {
+  "id": 1,
+  "name": "ADMIN",
+  "login": "test_admin",
+  "permissions": [
+   "SuperUser"
+  ],
+  "passwordHash": "BsYA48OyCiQmND7PwS640UrT6CYUCPSzbNa8pZAA85I=",
+  "passwordSalt": "rfIQUHYkapGUyS8sr/erwA=="
+ }
+}
