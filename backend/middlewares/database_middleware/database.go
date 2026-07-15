@@ -7,7 +7,7 @@ import (
 	"github.com/univers106/ITI/database"
 )
 
-func NewDatabaseMiddleware(db database.Database) echo.MiddlewareFunc {
+func NewDatabaseMiddleware(db database.UserDatabase) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c *echo.Context) error {
 			c.Set("_database", db)
@@ -17,8 +17,8 @@ func NewDatabaseMiddleware(db database.Database) echo.MiddlewareFunc {
 	}
 }
 
-func GetDatabase(c *echo.Context) (database.Database, error) {
-	database, err := echo.ContextGet[database.Database](c, "_database")
+func GetDatabase(c *echo.Context) (database.UserDatabase, error) {
+	database, err := echo.ContextGet[database.UserDatabase](c, "_database")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get session store: %w", err)
 	}

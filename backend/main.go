@@ -6,9 +6,8 @@ import (
 
 	"github.com/labstack/echo/v5"
 	echoMiddlewares "github.com/labstack/echo/v5/middleware"
-	"github.com/univers106/ITI/config"
 	"github.com/univers106/ITI/database"
-	"github.com/univers106/ITI/database/file_based"
+	"github.com/univers106/ITI/database/postgresql/user_db"
 	"github.com/univers106/ITI/handlers/private"
 	"github.com/univers106/ITI/handlers/private/user_manipulation"
 	"github.com/univers106/ITI/handlers/public"
@@ -17,30 +16,42 @@ import (
 )
 
 func main() {
-	cfg := config.ReadConfig("config.yaml")
+	// cfg := config.ReadConfig("config.yaml")
 
-	var db database.Database = file_based.NewFileBasedDatabase(cfg.DataDir)
+	var user_db database.UserDatabase = &user_db.UserDatabase{}
 
 	// временно
 
-	_, err := db.GetUserByLogin("test_user")
+	_, err := user_db.GetByLogin("test_user")
 	if errors.Is(err, database.ErrUserNotFound) {
 		//nolint
-		db.CreateUser("test_user", "Test User", "test_password")
+		user_db.CreateUser(
+			database.User{
+				Name:  "test_user",
+				Login: "test_user",
+			},
+			"test_password",
+		)
 	}
 
-	_, err = db.GetUserByLogin("test_admin")
+	_, err = user_db.GetByLogin("test_admin")
 	if errors.Is(err, database.ErrUserNotFound) {
 		//nolint
-		db.CreateUser("test_admin", "ADMIN", "test_password")
+		user_db.CreateUser(
+			database.User{
+				Name:  "test_admin",
+				Login: "test_admin",
+			},
+			"test_password",
+		)
 
-		admin, err := db.GetUserByLogin("test_admin")
+		admin, err := user_db.GetByLogin("test_admin")
 		if err != nil {
 			panic(err)
 		}
 
 		//nolint
-		db.UserAddPermissions(admin.ID, database.PermSuperUser)
+		user_db.UserAddPermissions(admin.Login, database.PermSuperUser)
 	}
 
 	// конец временно
@@ -52,7 +63,7 @@ func main() {
 
 	echoServer.Use(echoMiddlewares.RequestLogger())
 	echoServer.Use(echoMiddlewares.Recover())
-	echoServer.Use(database_middleware.NewDatabaseMiddleware(db))
+	echoServer.Use(database_middleware.NewDatabaseMiddleware(user_db))
 
 	apiGroup := echoServer.Group("/api")
 	privateApi := apiGroup.Group("/private", mainSessionMiddleware)
