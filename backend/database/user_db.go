@@ -6,8 +6,6 @@ package database
 
 import (
 	"errors"
-	"slices"
-	"time"
 )
 
 var (
@@ -26,40 +24,18 @@ const (
 	PermSuperUser         = "SuperUser" // не стоит использовать такое в проде, сделал для удобной разработки
 )
 
-type Database interface {
-	GetUserByID(id int) (*User, error)
-	GetUserByLogin(login string) (*User, error)
+type UserDatabase interface {
+	GetByLogin(login string) (*User, error)
+
 	UserAuthentication(login string, password string) (*User, error)
-	CreateUser(login string, name string, password string) error
-	DeleteUser(id int) error
 
-	ChangeUserPassword(userId int, password string) error
-	ChangeUserLogin(userId int, login string) error
-	ChangeUserName(userId int, name string) error
+	CreateUser(user User, password string) error
+	DeleteUser(login string) error
 
-	UserAddPermissions(userId int, permission string) error
-	UserRemovePermissions(userId int, permission string) error
-	UserCheckPermission(userId int, permission string) (bool, error)
-}
+	ChangeUserPassword(login string, newPassword string) error
+	ChangeUserLogin(login string, newLogin string) error
+	ChangeUserName(login string, newName string) error
 
-type Post struct {
-	ID    int
-	Title string
-	Body  string
-	Date  time.Time
-}
-
-type User struct {
-	ID          int      `json:"id"`
-	Name        string   `json:"name"`
-	Login       string   `json:"login"`
-	Permissions []string `json:"permissions"`
-}
-
-func (u *User) HasPermission(permission string) bool {
-	if slices.Contains(u.Permissions, PermSuperUser) {
-		return true
-	}
-
-	return slices.Contains(u.Permissions, permission)
+	UserAddPermissions(login string, permission string) error
+	UserRemovePermissions(login string, permission string) error
 }
