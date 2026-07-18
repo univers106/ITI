@@ -7,18 +7,23 @@ import (
 	"github.com/labstack/echo/v5"
 	echoMiddlewares "github.com/labstack/echo/v5/middleware"
 	"github.com/univers106/ITI/database"
+	"github.com/univers106/ITI/database/postgresql"
 	"github.com/univers106/ITI/database/postgresql/user_db"
 	"github.com/univers106/ITI/handlers/private"
 	"github.com/univers106/ITI/handlers/private/user_manipulation"
 	"github.com/univers106/ITI/handlers/public"
-	"github.com/univers106/ITI/middlewares/database_middleware"
+	user_database_middleware "github.com/univers106/ITI/middlewares/database_middleware/user"
 	"github.com/univers106/ITI/middlewares/sessions_middleware"
 )
 
 func main() {
 	// cfg := config.ReadConfig("config.yaml")
 
-	var user_db database.UserDatabase = &user_db.UserDatabase{}
+	// пока без конфига
+	// postgres://[user]:[password]@[host]:[port]/[dbname]?[options]
+	pgpool := postgresql.NewPool("postgres://sen1van@localhost:5432/postgres")
+
+	var user_db database.UserDatabase = user_db.NewUserDatabase(pgpool)
 
 	// временно
 
@@ -63,7 +68,7 @@ func main() {
 
 	echoServer.Use(echoMiddlewares.RequestLogger())
 	echoServer.Use(echoMiddlewares.Recover())
-	echoServer.Use(database_middleware.NewDatabaseMiddleware(user_db))
+	echoServer.Use(user_database_middleware.NewMiddleware(user_db))
 
 	apiGroup := echoServer.Group("/api")
 	privateApi := apiGroup.Group("/private", mainSessionMiddleware)

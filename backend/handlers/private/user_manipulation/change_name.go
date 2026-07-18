@@ -9,8 +9,8 @@ import (
 )
 
 type changeNameRequest struct {
-	UserId int    `form:"userId"`
-	Name   string `form:"name"`
+	UserLogin string `form:"userLogin"`
+	Name      string `form:"name"`
 }
 
 func PostChangeName(c *echo.Context) error {
@@ -29,7 +29,7 @@ func PostChangeName(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "There is something wrong with the values")
 	}
 
-	err = db.ChangeUserName(request.UserId, request.Name)
+	err = db.ChangeUserName(request.UserLogin, request.Name)
 	if err != nil {
 		return echo.NewHTTPError(
 			http.StatusInternalServerError,

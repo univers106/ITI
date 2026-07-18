@@ -1,4 +1,4 @@
-package postgresql
+package user_db_test
 
 import (
 	"testing"

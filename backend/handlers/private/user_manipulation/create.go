@@ -30,7 +30,13 @@ func PostCreate(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "There is something wrong with the values")
 	}
 
-	err = db.CreateUser(request.Login, request.Name, request.Password)
+	err = db.CreateUser(
+		database.User{
+			Login: request.Login,
+			Name:  request.Name,
+		},
+		request.Password,
+	)
 	if err != nil {
 		return echo.NewHTTPError(
 			http.StatusInternalServerError,

@@ -9,8 +9,8 @@ import (
 )
 
 type changeLoginRequest struct {
-	userId int    `form:"userId"`
-	login  string `form:"login"`
+	userLogin string `form:"userLogin"`
+	login     string `form:"login"`
 }
 
 func PostChangeLogin(c *echo.Context) error {
@@ -29,7 +29,7 @@ func PostChangeLogin(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "There is something wrong with the values")
 	}
 
-	err = db.ChangeUserLogin(request.userId, request.login)
+	err = db.ChangeUserLogin(request.userLogin, request.login)
 	if err != nil {
 		return echo.NewHTTPError(
 			http.StatusInternalServerError,

@@ -3,8 +3,8 @@ package database
 import "slices"
 
 type User struct {
-	Name        string   `json:"name"`
 	Login       string   `json:"login"`
+	Name        string   `json:"name"`
 	Permissions []string `json:"permissions"`
 }
 

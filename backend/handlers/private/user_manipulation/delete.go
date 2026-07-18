@@ -2,7 +2,6 @@ package user_manipulation
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v5"
 	"github.com/univers106/ITI/database"
@@ -18,14 +17,14 @@ func PostDelete(c *echo.Context) error {
 		return httpErr
 	}
 
-	userIdValue := c.FormValue("userId")
+	userIdValue := c.FormValue("userLogin")
 	if userIdValue == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "userId is null")
+		return echo.NewHTTPError(http.StatusBadRequest, "userLogin is null")
 	}
 
-	userId, err := strconv.Atoi(userIdValue)
+	user, err := db.GetByLogin(userIdValue)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "invalid userId")
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid userLogin")
 	}
 
 	sessionStorage, err := sessions_middleware.GetSessionStorage(c)
@@ -33,7 +32,7 @@ func PostDelete(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get session storage")
 	}
 
-	err = db.DeleteUser(userId)
+	err = db.DeleteUser(user.Login)
 	if err != nil {
 		return echo.NewHTTPError(
 			http.StatusInternalServerError,
@@ -41,7 +40,7 @@ func PostDelete(c *echo.Context) error {
 		)
 	}
 
-	err = sessionStorage.DeleteUserSessions(userId)
+	err = sessionStorage.DeleteUserSessions(user.Login)
 	if err != nil {
 		return echo.NewHTTPError(
 			http.StatusInternalServerError,
