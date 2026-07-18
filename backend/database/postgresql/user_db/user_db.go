@@ -29,12 +29,13 @@ func NewUserDatabase(pool *pgxpool.Pool) *UserDatabase {
 
 func createUsersTable(pool *pgxpool.Pool) error {
 	query := `
-	CREATE TABLE users (
-		id SERIAL PRIMARY KEY,
+	CREATE TABLE public.users (
+		id BIGSERIAL PRIMARY KEY,
 		login VARCHAR(50) NOT NULL UNIQUE,
 		name VARCHAR(100) NOT NULL,
 		permissions TEXT[] NOT NULL DEFAULT '{}',
-		password_hash TEXT NOT NULL
+		password_hash BYTEA NOT NULL,
+		password_salt BYTEA NOT NULL
 	);`
 
 	reqCtx, cancel := context.WithTimeout(context.Background(), postgresql.ReqTimeout)

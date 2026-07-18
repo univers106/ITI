@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"log/slog"
 
 	"github.com/labstack/echo/v5"
@@ -27,36 +26,28 @@ func main() {
 
 	// временно
 
-	_, err := user_db.GetByLogin("test_user")
-	if errors.Is(err, database.ErrUserNotFound) {
-		//nolint
-		user_db.CreateUser(
-			database.User{
-				Name:  "test_user",
-				Login: "test_user",
-			},
-			"test_password",
-		)
+	err := user_db.CreateUser(
+		database.User{
+			Name:        "test_user",
+			Login:       "test_user",
+			Permissions: []string{""},
+		},
+		"test_password",
+	)
+	if err != nil {
+		panic(err)
 	}
 
-	_, err = user_db.GetByLogin("test_admin")
-	if errors.Is(err, database.ErrUserNotFound) {
-		//nolint
-		user_db.CreateUser(
-			database.User{
-				Name:  "test_admin",
-				Login: "test_admin",
-			},
-			"test_password",
-		)
-
-		admin, err := user_db.GetByLogin("test_admin")
-		if err != nil {
-			panic(err)
-		}
-
-		//nolint
-		user_db.UserAddPermissions(admin.Login, database.PermSuperUser)
+	err = user_db.CreateUser(
+		database.User{
+			Name:        "test_admin",
+			Login:       "test_admin",
+			Permissions: []string{"SuperUser"},
+		},
+		"test_password",
+	)
+	if err != nil {
+		panic(err)
 	}
 
 	// конец временно

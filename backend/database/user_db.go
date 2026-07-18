@@ -36,6 +36,6 @@ type UserDatabase interface {
 	ChangeUserLogin(login string, newLogin string) error
 	ChangeUserName(login string, newName string) error
 
-	UserAddPermissions(login string, permission string) error
-	UserRemovePermissions(login string, permission string) error
+	UserAddPermission(login string, permission string) error
+	UserRemovePermission(login string, permission string) error
 }
