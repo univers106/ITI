@@ -15,7 +15,7 @@ const (
 )
 
 // return (hash, salt)
-func hashPassword(password string) ([]byte, []byte) {
+func hashNewPassword(password string) ([]byte, []byte) {
 	salt := make([]byte, saltLength)
 	controlNum, err := rand.Read(salt)
 	if err != nil {
@@ -25,7 +25,12 @@ func hashPassword(password string) ([]byte, []byte) {
 		panic("salt length mismatch")
 	}
 
-	hashedPassword := argon2.IDKey([]byte(password), salt, timeCost, memoryCost, threads, hashLength)
+	hashedPassword := hashPassword(password, salt)
 
 	return hashedPassword, salt
+}
+
+func hashPassword(password string, salt []byte) []byte {
+	hashedPassword := argon2.IDKey([]byte(password), salt, timeCost, memoryCost, threads, hashLength)
+	return hashedPassword
 }

@@ -10,7 +10,7 @@ import (
 
 func (db *UserDatabase) CreateUser(user database.User, password string) error {
 
-	passwordHash, passwordSalt := hashPassword(password)
+	passwordHash, passwordSalt := hashNewPassword(password)
 
 	query := `
 		INSERT INTO public.users (login, name, permissions, password_hash, password_salt)

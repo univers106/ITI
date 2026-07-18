@@ -2,11 +2,17 @@ package user_db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/univers106/ITI/database/postgresql"
+)
+
+var (
+	ErrAuthInvalid  = errors.New("invalid credentials")
+	ErrUserNotFound = errors.New("user not found")
 )
 
 type UserDatabase struct {

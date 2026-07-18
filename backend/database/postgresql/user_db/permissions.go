@@ -22,7 +22,7 @@ func (db *UserDatabase) UserAddPermission(login string, permission string) error
 		return fmt.Errorf("failed to add permission: %w", err)
 	}
 	if res.RowsAffected() == 0 {
-		return fmt.Errorf("no user found or permission already exists")
+		return fmt.Errorf("%w; or permission already exists", ErrUserNotFound)
 	}
 
 	return nil
@@ -44,7 +44,7 @@ func (db *UserDatabase) UserRemovePermission(login string, permission string) er
 	}
 
 	if res.RowsAffected() == 0 {
-		return fmt.Errorf("no permission found to remove")
+		return fmt.Errorf("%w; or no permission found to remove", ErrUserNotFound)
 	}
 
 	return nil
