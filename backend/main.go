@@ -2,9 +2,11 @@ package main
 
 import (
 	"log/slog"
+	"os"
 
 	"github.com/labstack/echo/v5"
 	echoMiddlewares "github.com/labstack/echo/v5/middleware"
+	"github.com/univers106/ITI/config"
 	"github.com/univers106/ITI/database"
 	"github.com/univers106/ITI/database/postgresql"
 	"github.com/univers106/ITI/database/postgresql/user_db"
@@ -16,13 +18,28 @@ import (
 )
 
 func main() {
-	// cfg := config.ReadConfig("config.yaml")
+	cfg := config.ReadConfig("config.yaml")
 
 	// пока без конфига
 	// postgres://[user]:[password]@[host]:[port]/[dbname]?[options]
-	pgpool := postgresql.NewPool("postgres://sen1van@localhost:5432/postgres")
+	pgpool := postgresql.NewPool(cfg.PostgresSqlURL)
 
 	var user_db database.UserDatabase = user_db.NewUserDatabase(pgpool)
+
+	argsWithProg := os.Args
+	if len(argsWithProg) > 1 {
+		if argsWithProg[1] == "create-super-user" {
+			user_db.CreateUser(
+				database.User{
+					Login:       argsWithProg[2],
+					Name:        argsWithProg[2],
+					Permissions: []string{database.PermSuperUser},
+				},
+				argsWithProg[3],
+			)
+
+		}
+	}
 
 	sessionStorage := sessions_middleware.NewSessionStorage()
 	mainSessionMiddleware := sessions_middleware.NewSessionsMiddleware(sessionStorage)
@@ -37,8 +54,6 @@ func main() {
 	privateApi := apiGroup.Group("/private", mainSessionMiddleware)
 	privateApi.Use(sessions_middleware.OnlyUsersMiddleware)
 
-	publicApi := apiGroup.Group("/public")
-
 	privateApi.GET("/hello", private.GetHello)
 	privateApi.GET("/logout", private.PostLogout)
 
@@ -47,10 +62,12 @@ func main() {
 	userManipulationApi.POST("/delete", user_manipulation.PostDelete)
 	userManipulationApi.POST("/change-password", user_manipulation.PostChangePassword)
 
+	publicApi := apiGroup.Group("/public")
+
 	publicApi.GET("/hello", public.GetHello)
 	publicApi.POST("/login", public.PostLogin, mainSessionMiddleware)
 
-	err = echoServer.Start(":8080")
+	err := echoServer.Start(cfg.Host + ":8080")
 	if err != nil {
 		slog.Error("failed to start server", "error", err)
 	}

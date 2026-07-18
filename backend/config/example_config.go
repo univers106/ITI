@@ -1,7 +1,6 @@
 package config
 
 import (
-	"crypto/rand"
 	"os"
 
 	"go.yaml.in/yaml/v4"
@@ -20,9 +19,8 @@ func getExampleConfig() []byte {
 	var err error
 
 	example = Config{
-		SessionKey: rand.Text(),
-		Domain:     "localhost",
-		DataDir:    "./data",
+		Host:           "[::]",
+		PostgresSqlURL: "postgres://[user]:[password]@[host]:[port]/[dbname]?[options]",
 	}
 
 	data, err = yaml.Marshal(example)
