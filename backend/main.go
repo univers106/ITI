@@ -24,34 +24,6 @@ func main() {
 
 	var user_db database.UserDatabase = user_db.NewUserDatabase(pgpool)
 
-	// временно
-
-	err := user_db.CreateUser(
-		database.User{
-			Name:        "test_user",
-			Login:       "test_user",
-			Permissions: []string{""},
-		},
-		"test_password",
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = user_db.CreateUser(
-		database.User{
-			Name:        "test_admin",
-			Login:       "test_admin",
-			Permissions: []string{"SuperUser"},
-		},
-		"test_password",
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	// конец временно
-
 	sessionStorage := sessions_middleware.NewSessionStorage()
 	mainSessionMiddleware := sessions_middleware.NewSessionsMiddleware(sessionStorage)
 
