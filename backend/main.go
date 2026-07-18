@@ -2,7 +2,9 @@ package main
 
 import (
 	"log/slog"
+	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v5"
 	echoMiddlewares "github.com/labstack/echo/v5/middleware"
 	"github.com/univers106/ITI/cli"
@@ -16,17 +18,32 @@ import (
 	"github.com/univers106/ITI/middlewares/sessions_middleware"
 )
 
+type Validator struct {
+	validator *validator.Validate
+}
+
+func (v *Validator) Validate(i any) error {
+	err := v.validator.Struct(i)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	return nil
+}
+
 func main() {
 	cfg := config.ReadConfig("config.yaml")
 
 	// пока без конфига
 	// postgres://[user]:[password]@[host]:[port]/[dbname]?[options]
-	pgpool := postgresql.NewPool(cfg.PostgresSqlURL)
+	pgpool := postgresql.NewPool(cfg.PostgresURL)
+	defer pgpool.Close()
 
 	userDb := user_db.NewUserDatabase(pgpool)
-	defer userDb.Close()
 
-	cli.Run()
+	if cli.Run(pgpool) {
+		return
+	}
 
 	sessionStorage := sessions_middleware.NewSessionStorage()
 	mainSessionMiddleware := sessions_middleware.NewSessionsMiddleware(sessionStorage)
@@ -53,6 +70,8 @@ func main() {
 
 	publicApi.GET("/hello", public.GetHello)
 	publicApi.POST("/login", public.PostLogin, mainSessionMiddleware)
+
+	echoServer.Validator = &Validator{validator: validator.New()}
 
 	err := echoServer.Start(cfg.Host)
 	if err != nil {

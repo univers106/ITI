@@ -19,8 +19,8 @@ func getExampleConfig() []byte {
 	var err error
 
 	example = Config{
-		Host:           "[::]:8080",
-		PostgresSqlURL: "postgres://[user]:[password]@[host]:[port]/[dbname]?[options]",
+		Host:        "[::]:8080",
+		PostgresURL: "postgres://[user]:[password]@[host]:[port]/[dbname]?[options]",
 	}
 
 	data, err = yaml.Marshal(example)

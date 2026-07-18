@@ -13,10 +13,6 @@ type UserDatabase struct {
 	pool *pgxpool.Pool
 }
 
-func (db *UserDatabase) Close() {
-	db.pool.Close()
-}
-
 func NewUserDatabase(pool *pgxpool.Pool) *UserDatabase {
 	tableExists, err := postgresql.IsTableExists(pool, "public", "users")
 	if err != nil {

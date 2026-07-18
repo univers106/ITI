@@ -4,23 +4,15 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/univers106/ITI/config"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/univers106/ITI/database"
-	"github.com/univers106/ITI/database/postgresql"
 	"github.com/univers106/ITI/database/postgresql/user_db"
 )
 
-func get_conf() config.Config {
-	return config.ReadConfig("config.yaml")
-}
-
 // Run runs the CLI
 // returns true if has command.
-func Run() bool {
-	cfg := get_conf()
-
-	pgPool := postgresql.NewPool(cfg.PostgresSqlURL)
-	userDB := user_db.NewUserDatabase(pgPool)
+func Run(pool *pgxpool.Pool) bool {
+	userDB := user_db.NewUserDatabase(pool)
 
 	argsWithProg := os.Args
 

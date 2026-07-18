@@ -2,7 +2,6 @@ package user_db
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/univers106/ITI/database"
 	"github.com/univers106/ITI/database/postgresql"
@@ -27,7 +26,7 @@ func (db *UserDatabase) CreateUser(user database.User, password string) error {
 		passwordSalt,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to insert user: %w", err)
+		return database.ErrUnexpected
 	}
 
 	return nil
@@ -43,7 +42,7 @@ func (db *UserDatabase) DeleteUser(login string) error {
 
 	res, err := db.pool.Exec(ctx, query, login)
 	if err != nil {
-		return fmt.Errorf("failed to delete user: %w", err)
+		return database.ErrUnexpected
 	}
 
 	if res.RowsAffected() == 0 {

@@ -1,6 +1,6 @@
 package config
 
 type Config struct {
-	Host           string `yaml:"host"`
-	PostgresSqlURL string `yaml:"postgre_sql_url"`
+	Host        string `yaml:"host"`
+	PostgresURL string `yaml:"postgres_url"`
 }

@@ -8,6 +8,11 @@ import (
 	"github.com/univers106/ITI/middlewares/sessions_middleware"
 )
 
+type loginRequest struct {
+	Login    string `form:"userLogin" validate:"required,alphanum,min=2,max=32"`
+	Password string `form:"password"  validate:"required,min=8,max=32,ascii"`
+}
+
 func PostLogin(c *echo.Context) error {
 	sessionStorage, err := sessions_middleware.GetSessionStorage(c)
 	if err != nil {
@@ -22,11 +27,16 @@ func PostLogin(c *echo.Context) error {
 		)
 	}
 
-	loginValue := c.FormValue("login")
-	passwordValue := c.FormValue("password")
+	var req loginRequest
 
-	if passwordValue == "" || loginValue == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "login or password value is null")
+	err = c.Bind(&req)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+	}
+
+	err = c.Validate(&req)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	db, err := user_database_middleware.Get(c)
@@ -34,7 +44,7 @@ func PostLogin(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get database")
 	}
 
-	user, err := db.UserAuthentication(loginValue, passwordValue)
+	user, err := db.UserAuthentication(req.Login, req.Password)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 	}

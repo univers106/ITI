@@ -2,8 +2,10 @@ package user_db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/univers106/ITI/database"
 	"github.com/univers106/ITI/database/postgresql"
 )
@@ -22,6 +24,10 @@ func (db *UserDatabase) GetByLogin(login string) (*database.User, error) {
 
 	err := row.Scan(&user.Login, &user.Name, &user.Permissions)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, database.ErrUserNotFound
+		}
+
 		return nil, fmt.Errorf("failed to get user by login: %w", err)
 	}
 

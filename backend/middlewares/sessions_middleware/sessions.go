@@ -78,21 +78,27 @@ func DeleteCookies(c *echo.Context) {
 func GetUserFromSession(c *echo.Context) (*database.User, error) {
 	sessionStorage, err := GetSessionStorage(c)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get user from session: %w", err)
+		return nil, echo.NewHTTPError(
+			http.StatusInternalServerError,
+			"failed to get user from session",
+		)
 	}
 
 	sessionKey, err := GetKeyFromCookies(c)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get user from session: %w", err)
+		return nil, echo.NewHTTPError(
+			http.StatusInternalServerError,
+			"failed to get user from session",
+		)
 	}
 
 	userLogin, err := sessionStorage.GetLoginFromSession(sessionKey)
 	if err != nil {
 		DeleteCookies(c)
 
-		return nil, fmt.Errorf(
-			"failed to get user from session: %w. You cookies is broken, we delete it",
-			err,
+		return nil, echo.NewHTTPError(
+			http.StatusInternalServerError,
+			"failed to get user from session. You cookies is broken, we delete it",
 		)
 	}
 
@@ -100,7 +106,7 @@ func GetUserFromSession(c *echo.Context) (*database.User, error) {
 	if err != nil {
 		return nil, echo.NewHTTPError(
 			http.StatusInternalServerError,
-			fmt.Sprintf("failed to get database: %s.", err.Error()),
+			"failed to get database",
 		)
 	}
 
@@ -110,10 +116,7 @@ func GetUserFromSession(c *echo.Context) (*database.User, error) {
 
 		return nil, echo.NewHTTPError(
 			http.StatusInternalServerError,
-			fmt.Sprintf(
-				"can't get user by login: %s. You cookies is broken, we delete it",
-				err.Error(),
-			),
+			"can't get user by login. You cookies is broken, we delete it",
 		)
 	}
 
