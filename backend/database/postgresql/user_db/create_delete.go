@@ -9,7 +9,6 @@ import (
 )
 
 func (db *UserDatabase) CreateUser(user database.User, password string) error {
-
 	passwordHash, passwordSalt := hashNewPassword(password)
 
 	query := `
@@ -27,7 +26,6 @@ func (db *UserDatabase) CreateUser(user database.User, password string) error {
 		passwordHash,
 		passwordSalt,
 	)
-
 	if err != nil {
 		return fmt.Errorf("failed to insert user: %w", err)
 	}
@@ -43,10 +41,13 @@ func (db *UserDatabase) DeleteUser(login string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgresql.ReqTimeout)
 	defer cancel()
 
-	_, err := db.pool.Exec(ctx, query, login)
-
+	res, err := db.pool.Exec(ctx, query, login)
 	if err != nil {
 		return fmt.Errorf("failed to delete user: %w", err)
+	}
+
+	if res.RowsAffected() == 0 {
+		return database.ErrUserNotFound
 	}
 
 	return nil

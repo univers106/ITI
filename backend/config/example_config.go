@@ -19,7 +19,7 @@ func getExampleConfig() []byte {
 	var err error
 
 	example = Config{
-		Host:           "[::]",
+		Host:           "[::]:8080",
 		PostgresSqlURL: "postgres://[user]:[password]@[host]:[port]/[dbname]?[options]",
 	}
 

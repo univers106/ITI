@@ -19,6 +19,7 @@ func (db *UserDatabase) GetByLogin(login string) (*database.User, error) {
 	row := db.pool.QueryRow(ctx, query, login)
 
 	var user database.User
+
 	err := row.Scan(&user.Login, &user.Name, &user.Permissions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user by login: %w", err)

@@ -8,5 +8,7 @@ import (
 )
 
 func TestUserDatabaseInterface(t *testing.T) {
+	t.Parallel()
+
 	var _ database.UserDatabase = &user_db.UserDatabase{}
 }

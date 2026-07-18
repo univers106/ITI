@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/univers106/ITI/database"
 	"github.com/univers106/ITI/database/postgresql"
 )
 
@@ -21,8 +22,9 @@ func (db *UserDatabase) UserAddPermission(login string, permission string) error
 	if err != nil {
 		return fmt.Errorf("failed to add permission: %w", err)
 	}
+
 	if res.RowsAffected() == 0 {
-		return fmt.Errorf("%w; or permission already exists", ErrUserNotFound)
+		return fmt.Errorf("%w; or permission already exists", database.ErrUserNotFound)
 	}
 
 	return nil
@@ -44,7 +46,7 @@ func (db *UserDatabase) UserRemovePermission(login string, permission string) er
 	}
 
 	if res.RowsAffected() == 0 {
-		return fmt.Errorf("%w; or no permission found to remove", ErrUserNotFound)
+		return fmt.Errorf("%w; or no user found", database.ErrPermissionNotFound)
 	}
 
 	return nil

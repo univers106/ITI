@@ -1,6 +1,11 @@
 package user_db
 
-import "context"
+import (
+	"context"
+	"fmt"
+
+	"github.com/univers106/ITI/database"
+)
 
 func (db *UserDatabase) ChangeUserPassword(login string, newPassword string) error {
 	newHash, newSalt := hashNewPassword(newPassword)
@@ -9,11 +14,11 @@ func (db *UserDatabase) ChangeUserPassword(login string, newPassword string) err
 
 	affected, err := db.pool.Exec(context.Background(), req, newHash, newSalt, login)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to change user password: %w", err)
 	}
 
 	if affected.RowsAffected() == 0 {
-		return ErrUserNotFound
+		return database.ErrUserNotFound
 	}
 
 	return nil
@@ -24,11 +29,11 @@ func (db *UserDatabase) ChangeUserLogin(login string, newLogin string) error {
 
 	affected, err := db.pool.Exec(context.Background(), req, login, newLogin)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to change user login: %w", err)
 	}
 
 	if affected.RowsAffected() == 0 {
-		return ErrUserNotFound
+		return database.ErrUserNotFound
 	}
 
 	return nil
@@ -39,11 +44,11 @@ func (db *UserDatabase) ChangeUserName(login string, newName string) error {
 
 	affected, err := db.pool.Exec(context.Background(), req, login, newName)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to change user name: %w", err)
 	}
 
 	if affected.RowsAffected() == 0 {
-		return ErrUserNotFound
+		return database.ErrUserNotFound
 	}
 
 	return nil

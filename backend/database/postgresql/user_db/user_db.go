@@ -2,7 +2,6 @@ package user_db
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 
@@ -10,17 +9,20 @@ import (
 	"github.com/univers106/ITI/database/postgresql"
 )
 
-var (
-	ErrAuthInvalid  = errors.New("invalid credentials")
-	ErrUserNotFound = errors.New("user not found")
-)
-
 type UserDatabase struct {
 	pool *pgxpool.Pool
 }
 
+func (db *UserDatabase) Close() {
+	db.pool.Close()
+}
+
 func NewUserDatabase(pool *pgxpool.Pool) *UserDatabase {
-	tableExists, _ := postgresql.IsTableExists(pool, "public", "users")
+	tableExists, err := postgresql.IsTableExists(pool, "public", "users")
+	if err != nil {
+		panic(err)
+	}
+
 	if !tableExists {
 		slog.Warn("users table does not exist, creating...")
 
@@ -46,6 +48,7 @@ func createUsersTable(pool *pgxpool.Pool) error {
 
 	reqCtx, cancel := context.WithTimeout(context.Background(), postgresql.ReqTimeout)
 	defer cancel()
+
 	_, err := pool.Exec(reqCtx, query)
 	if err != nil {
 		return fmt.Errorf("не удалось создать таблицу: %w", err)

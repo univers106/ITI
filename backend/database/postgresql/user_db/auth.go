@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/subtle"
 	"errors"
+	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/univers106/ITI/database"
@@ -28,22 +29,27 @@ func (db *UserDatabase) UserAuthentication(login string, password string) (*data
 	row := db.pool.QueryRow(ctx, req, login)
 
 	var user User
+
 	err := row.Scan(
-		&user.User.Login,
-		&user.User.Name,
-		&user.User.Permissions,
+		&user.Login,
+		&user.Name,
+		&user.Permissions,
 		&user.PasswordHash,
 		&user.PasswordSalt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrAuthInvalid
+			return nil, database.ErrIncorrectPassword
 		}
-		return nil, err
+
+		return nil, fmt.Errorf("failed to scan user: %w", err)
 	}
 
-	if subtle.ConstantTimeCompare(hashPassword(password, user.PasswordSalt), user.PasswordHash) != 1 {
-		return nil, ErrAuthInvalid
+	if subtle.ConstantTimeCompare(
+		hashPassword(password, user.PasswordSalt),
+		user.PasswordHash,
+	) != 1 {
+		return nil, database.ErrIncorrectPassword
 	}
 
 	return &user.User, nil

@@ -7,7 +7,7 @@ import (
 	"github.com/univers106/ITI/middlewares/sessions_middleware"
 )
 
-func PostLogout(c *echo.Context) error {
+func GetLogout(c *echo.Context) error {
 	sessionStorage, err := sessions_middleware.GetSessionStorage(c)
 	if err != nil {
 		return echo.NewHTTPError(
