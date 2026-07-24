@@ -39,7 +39,7 @@ func createUsersTable(pool *pgxpool.Pool) error {
 		name VARCHAR(100) NOT NULL,
 		permissions TEXT[] NOT NULL DEFAULT '{}',
 		password_hash BYTEA NOT NULL,
-		password_salt BYTEA NOT NULL
+		password_salt BYTEA NOT NULL,
 	);`
 
 	reqCtx, cancel := context.WithTimeout(context.Background(), postgresql.ReqTimeout)

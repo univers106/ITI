@@ -1,7 +1,8 @@
 package database
 
 type Contest struct {
+	Id           int
 	Name         string
-	Competitions []string
+	Competitions []int
 	IsActive     bool
 }

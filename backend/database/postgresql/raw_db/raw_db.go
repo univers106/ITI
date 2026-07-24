@@ -2,6 +2,7 @@ package raw_db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 
@@ -9,7 +10,7 @@ import (
 	"github.com/univers106/ITI/database/postgresql"
 )
 
-var ErrDoesNotExist = fmt.Errorf("raw_data schema does not exist")
+var ErrDoesNotExist = errors.New("raw_data schema does not exist")
 
 type RawDatabase struct {
 	pool *pgxpool.Pool

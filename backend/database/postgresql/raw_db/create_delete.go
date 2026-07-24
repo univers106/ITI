@@ -8,7 +8,7 @@ import (
 	"github.com/univers106/ITI/database/postgresql"
 )
 
-func (db *RawDatabase) add(contest string, raw database.Raw) error {
+func (db *RawDatabase) Add(contest string, raw database.Raw) error {
 	query := fmt.Sprintf(`
 		INSERT INTO raw_data.%s (competition, student, score)
 		VALUES ($1, $2, $3);
@@ -18,7 +18,7 @@ func (db *RawDatabase) add(contest string, raw database.Raw) error {
 	defer cancel()
 
 	_, err := db.pool.Exec(ctx, query,
-		raw.Competition,
+		raw.CompetitionId,
 		raw.Student,
 		raw.Score,
 	)
@@ -29,7 +29,7 @@ func (db *RawDatabase) add(contest string, raw database.Raw) error {
 	return nil
 }
 
-func (db *RawDatabase) delete(contest string, raw database.Raw) error {
+func (db *RawDatabase) Delete(contest string, raw database.Raw) error {
 	query := fmt.Sprintf(`
 		DELETE FROM raw_data.%s
 		WHERE
@@ -44,5 +44,6 @@ func (db *RawDatabase) delete(contest string, raw database.Raw) error {
 	if err != nil {
 		return database.ErrUnexpected
 	}
+
 	return nil
 }
