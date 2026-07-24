@@ -27,3 +27,23 @@ func IsTableExists(pool *pgxpool.Pool, tableSchema, tableName string) (bool, err
 
 	return exists, nil
 }
+
+func IsSchemaExists(pool *pgxpool.Pool, schemaName string) (bool, error) {
+	query := `SELECT EXISTS (
+		SELECT 1
+		FROM information_schema.schemata
+		WHERE schema_name = $1
+	)`
+
+	var exists bool
+
+	reqCtx, cancel := context.WithTimeout(context.Background(), ReqTimeout)
+	defer cancel()
+
+	err := pool.QueryRow(reqCtx, query, schemaName).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("failed to check schema exists: %w", err)
+	}
+
+	return exists, nil
+}

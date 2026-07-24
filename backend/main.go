@@ -59,7 +59,7 @@ func main() {
 	privateApi.Use(sessions_middleware.OnlyUsersMiddleware)
 
 	privateApi.GET("/hello", private.GetHello)
-	privateApi.GET("/logout", private.GetLogout)
+	privateApi.POST("/logout", private.PostLogout)
 
 	userManipulationApi := privateApi.Group("/user-manipulation")
 	userManipulationApi.POST("/create", user_manipulation.PostCreate)
