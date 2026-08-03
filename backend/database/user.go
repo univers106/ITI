@@ -6,6 +6,7 @@ type User struct {
 	Login       string   `json:"login"`
 	Name        string   `json:"name"`
 	Permissions []string `json:"permissions"`
+	newPassword string
 }
 
 func (u *User) HasPermission(permission string) bool {
@@ -14,4 +15,12 @@ func (u *User) HasPermission(permission string) bool {
 	}
 
 	return slices.Contains(u.Permissions, permission)
+}
+
+func (u *User) SetPassword(newPassword string) {
+	u.newPassword = newPassword
+}
+
+func (u *User) IsPasswordUpdated() (bool, string) {
+	return u.newPassword != "", u.newPassword
 }

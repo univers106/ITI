@@ -7,7 +7,12 @@ import (
 	"github.com/univers106/ITI/database/postgresql"
 )
 
-func (db *UserDatabase) CreateUser(user database.User, password string) error {
+func (db *UserDatabase) Create(user database.User) error {
+	ok, password := user.IsPasswordUpdated()
+	if !ok {
+		return database.ErrUnexpected
+	}
+
 	passwordHash, passwordSalt := hashNewPassword(password)
 
 	query := `
@@ -32,7 +37,7 @@ func (db *UserDatabase) CreateUser(user database.User, password string) error {
 	return nil
 }
 
-func (db *UserDatabase) DeleteUser(login string) error {
+func (db *UserDatabase) Delete(login string) error {
 	query := `
 		DELETE FROM public.users WHERE login = $1;
 	`

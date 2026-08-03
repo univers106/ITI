@@ -1,0 +1,14 @@
+# Предвадительный API
+
+
+
+POST  /auth/login
+POST  /auth/logout
+GET   /auth/me
+PATCH /auth/change-password
+
+POST    /users
+GET     /users
+GET     /users/[login]
+PUT     /users/[login]
+DELETE  /users/[login]

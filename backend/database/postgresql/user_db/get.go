@@ -33,3 +33,30 @@ func (db *UserDatabase) GetByLogin(login string) (*database.User, error) {
 
 	return &user, nil
 }
+
+func (db *UserDatabase) GetAll() ([]database.User, error) {
+	query := `
+		SELECT login, name, permissions FROM public.users;
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgresql.ReqTimeout)
+	defer cancel()
+
+	rows, err := db.pool.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all users: %w", err)
+	}
+	defer rows.Close()
+
+	var users []database.User
+	for rows.Next() {
+		var user database.User
+		err := rows.Scan(&user.Login, &user.Name, &user.Permissions)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan user: %w", err)
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}
