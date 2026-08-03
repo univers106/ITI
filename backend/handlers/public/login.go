@@ -4,9 +4,14 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v5"
-	"github.com/univers106/ITI/middlewares/database_middleware"
+	user_database_middleware "github.com/univers106/ITI/middlewares/database_middleware/user"
 	"github.com/univers106/ITI/middlewares/sessions_middleware"
 )
+
+type loginRequest struct {
+	Login    string `form:"userLogin" validate:"required,alphanum,min=2,max=32"`
+	Password string `form:"password"  validate:"required,min=8,max=32,ascii"`
+}
 
 func PostLogin(c *echo.Context) error {
 	sessionStorage, err := sessions_middleware.GetSessionStorage(c)
@@ -22,24 +27,29 @@ func PostLogin(c *echo.Context) error {
 		)
 	}
 
-	loginValue := c.FormValue("login")
-	passwordValue := c.FormValue("password")
+	var req loginRequest
 
-	if passwordValue == "" || loginValue == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "login or password value is null")
+	err = c.Bind(&req)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
 	}
 
-	db, err := database_middleware.GetDatabase(c)
+	err = c.Validate(&req)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	db, err := user_database_middleware.Get(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get database")
 	}
 
-	user, err := db.UserAuthentication(loginValue, passwordValue)
+	user, err := db.UserAuthentication(req.Login, req.Password)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 	}
 
-	sessionKey, err := sessionStorage.NewSession(user.ID)
+	sessionKey, err := sessionStorage.NewSession(user.Login)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to create session")
 	}

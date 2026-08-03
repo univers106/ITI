@@ -1,0 +1,14 @@
+package user_db_test
+
+import (
+	"testing"
+
+	"github.com/univers106/ITI/database"
+	"github.com/univers106/ITI/database/postgresql/user_db"
+)
+
+func TestUserDatabaseInterface(t *testing.T) {
+	t.Parallel()
+
+	var _ database.UserDatabase = &user_db.UserDatabase{}
+}

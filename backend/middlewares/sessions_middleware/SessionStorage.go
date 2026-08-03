@@ -18,17 +18,17 @@ const (
 )
 
 type SessionStorage interface {
-	GetIdFromSession(key string) (int, error)
-	NewSession(userId int) (string, error)
+	GetLoginFromSession(key string) (string, error)
+	NewSession(userLogin string) (string, error)
 	DeleteSession(key string) error
-	DeleteUserSessions(userId int) error
+	DeleteUserSessions(userLogin string) error
 }
 
 // далее реализация на map, если, у вас сервис больше,
 // то стоит сделать реализацию на субд
 
 type SessionData struct {
-	UserId    int
+	UserLogin string
 	CreatedAt time.Time
 	Timeout   time.Time
 	LastVisit time.Time
@@ -39,29 +39,29 @@ type MapBasedSessionStorage struct {
 	mu       sync.Mutex
 }
 
-func (m *MapBasedSessionStorage) GetIdFromSession(key string) (int, error) {
+func (m *MapBasedSessionStorage) GetLoginFromSession(key string) (string, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	data, ok := m.sessions[key]
 	if !ok {
-		return 0, ErrSessionNotFound
+		return "", ErrSessionNotFound
 	}
 
 	now := time.Now()
 	if now.After(data.Timeout) || now.After(data.LastVisit.Add(SessionIdleTimeout)) {
 		delete(m.sessions, key)
 
-		return 0, ErrSessionNotFound
+		return "", ErrSessionNotFound
 	}
 
 	data.LastVisit = time.Now()
 	m.sessions[key] = data
 
-	return data.UserId, nil
+	return data.UserLogin, nil
 }
 
-func (m *MapBasedSessionStorage) NewSession(userId int) (string, error) {
+func (m *MapBasedSessionStorage) NewSession(userLogin string) (string, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -73,7 +73,7 @@ func (m *MapBasedSessionStorage) NewSession(userId int) (string, error) {
 		if _, ok := m.sessions[key]; !ok {
 			now := time.Now()
 			m.sessions[key] = SessionData{
-				UserId:    userId,
+				UserLogin: userLogin,
 				CreatedAt: now,
 				Timeout:   now.Add(SessionTimeout),
 				LastVisit: now,
@@ -100,12 +100,12 @@ func (m *MapBasedSessionStorage) DeleteSession(key string) error {
 	return nil
 }
 
-func (m *MapBasedSessionStorage) DeleteUserSessions(userId int) error {
+func (m *MapBasedSessionStorage) DeleteUserSessions(userLogin string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	for key, data := range m.sessions {
-		if data.UserId == userId {
+		if data.UserLogin == userLogin {
 			delete(m.sessions, key)
 		}
 	}

@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo/v5"
 	"github.com/univers106/ITI/database"
-	"github.com/univers106/ITI/middlewares/database_middleware"
+	user_database_middleware "github.com/univers106/ITI/middlewares/database_middleware/user"
 )
 
 func OnlyUsersMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
@@ -36,7 +36,7 @@ func GetUser(c *echo.Context) (*database.User, error) {
 func GetUserDbCheckPermision(
 	c *echo.Context,
 	permission string,
-) (*database.User, database.Database, *echo.HTTPError) {
+) (*database.User, database.UserDatabase, *echo.HTTPError) {
 	user, err := GetUser(c)
 	if err != nil {
 		return nil, nil, echo.NewHTTPError(
@@ -52,7 +52,7 @@ func GetUserDbCheckPermision(
 		)
 	}
 
-	db, err := database_middleware.GetDatabase(c)
+	db, err := user_database_middleware.Get(c)
 	if err != nil {
 		return nil, nil, echo.NewHTTPError(http.StatusInternalServerError, "failed to get database")
 	}

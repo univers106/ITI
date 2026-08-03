@@ -8,7 +8,7 @@ import (
 
 	"github.com/labstack/echo/v5"
 	"github.com/univers106/ITI/database"
-	"github.com/univers106/ITI/middlewares/database_middleware"
+	user_database_middleware "github.com/univers106/ITI/middlewares/database_middleware/user"
 )
 
 const AuthSession = "auth"
@@ -78,42 +78,45 @@ func DeleteCookies(c *echo.Context) {
 func GetUserFromSession(c *echo.Context) (*database.User, error) {
 	sessionStorage, err := GetSessionStorage(c)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get user from session: %w", err)
+		return nil, echo.NewHTTPError(
+			http.StatusInternalServerError,
+			"failed to get user from session",
+		)
 	}
 
 	sessionKey, err := GetKeyFromCookies(c)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get user from session: %w", err)
-	}
-
-	userId, err := sessionStorage.GetIdFromSession(sessionKey)
-	if err != nil {
-		DeleteCookies(c)
-
-		return nil, fmt.Errorf(
-			"failed to get user from session: %w. You cookies is broken, we delete it",
-			err,
-		)
-	}
-
-	db, err := database_middleware.GetDatabase(c)
-	if err != nil {
 		return nil, echo.NewHTTPError(
 			http.StatusInternalServerError,
-			fmt.Sprintf("failed to get database: %s.", err.Error()),
+			"failed to get user from session",
 		)
 	}
 
-	user, err := db.GetUserByID(userId)
+	userLogin, err := sessionStorage.GetLoginFromSession(sessionKey)
 	if err != nil {
 		DeleteCookies(c)
 
 		return nil, echo.NewHTTPError(
 			http.StatusInternalServerError,
-			fmt.Sprintf(
-				"can't get user by login: %s. You cookies is broken, we delete it",
-				err.Error(),
-			),
+			"failed to get user from session. You cookies is broken, we delete it",
+		)
+	}
+
+	db, err := user_database_middleware.Get(c)
+	if err != nil {
+		return nil, echo.NewHTTPError(
+			http.StatusInternalServerError,
+			"failed to get database",
+		)
+	}
+
+	user, err := db.GetByLogin(userLogin)
+	if err != nil {
+		DeleteCookies(c)
+
+		return nil, echo.NewHTTPError(
+			http.StatusInternalServerError,
+			"can't get user by login. You cookies is broken, we delete it",
 		)
 	}
 

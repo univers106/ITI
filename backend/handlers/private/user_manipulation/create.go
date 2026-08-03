@@ -9,9 +9,9 @@ import (
 )
 
 type createUserRequest struct {
-	Login    string `form:"login"`
-	Name     string `form:"name"`
-	Password string `form:"password"`
+	Login    string `form:"login"    validate:"required,alphanum,min=2,max=32"`
+	Name     string `form:"name"     validate:"required,min=2,max=50"`
+	Password string `form:"password" validate:"required,min=8,max=32,ascii"`
 }
 
 func PostCreate(c *echo.Context) error {
@@ -30,11 +30,22 @@ func PostCreate(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "There is something wrong with the values")
 	}
 
-	err = db.CreateUser(request.Login, request.Name, request.Password)
+	err = c.Validate(&request)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "There is something wrong with the values")
+	}
+
+	err = db.CreateUser(
+		database.User{
+			Login: request.Login,
+			Name:  request.Name,
+		},
+		request.Password,
+	)
 	if err != nil {
 		return echo.NewHTTPError(
 			http.StatusInternalServerError,
-			"failed to create user: "+err.Error(),
+			"failed to create user",
 		)
 	}
 
