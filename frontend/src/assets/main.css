@@ -1,0 +1,19 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@font-face {
+  font-family: 'Golos Text';
+  src: url('/golos_regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: 'Golos Text', sans-serif;
+}
+
+:root {
+  --ui-radius: 0rem;
+  --ui-primary: #800000;
+}

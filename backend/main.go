@@ -61,7 +61,7 @@ func main() {
 	publicApi := apiGroup.Group("/public")
 
 	privateApi.GET("/hello", private.GetHello)
-	privateApi.GET("/logout", private.PostLogout)
+	privateApi.POST("/logout", private.PostLogout)
 
 	userManipulationApi := privateApi.Group("/user-manipulation")
 	userManipulationApi.POST("/create", user_manipulation.PostCreate)

@@ -52,8 +52,8 @@ func SetKeyToCookies(c *echo.Context, sessionKey string) {
 	cookie.Value = sessionKey
 	cookie.Path = "/"
 	cookie.HttpOnly = true
-	cookie.Secure = true
-	cookie.SameSite = http.SameSiteStrictMode
+	cookie.Secure = false
+	cookie.SameSite = http.SameSiteNoneMode
 	cookie.MaxAge = int((time.Hour + SessionIdleTimeout).Seconds())
 	c.SetCookie(cookie)
 }
@@ -64,8 +64,8 @@ func DeleteCookies(c *echo.Context) {
 	cookie.Value = ""
 	cookie.Path = "/"
 	cookie.HttpOnly = true
-	cookie.Secure = true
-	cookie.SameSite = http.SameSiteStrictMode
+	cookie.Secure = false
+	cookie.SameSite = http.SameSiteNoneMode
 	cookie.MaxAge = -1
 	cookie.Expires = time.Unix(1, 0)
 	c.SetCookie(cookie)
