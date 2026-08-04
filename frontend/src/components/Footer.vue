@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
 import type { NavigationMenuItem } from '@nuxt/ui'
-import { useAuth } from '../scripts/useAuth'
 
-const router = useRouter()
-const { isAuthenticated, logout } = useAuth()
 
 const items: NavigationMenuItem[] = [
   {
@@ -26,10 +22,6 @@ const items: NavigationMenuItem[] = [
   },
 ]
 
-async function handleLogout() {
-  await logout()
-  router.push('/')
-}
 </script>
 
 <template>
@@ -38,14 +30,6 @@ async function handleLogout() {
         <p class="text-muted text-sm">Copyright © {{ new Date().getFullYear() }}</p>
     </template>
 
-        <UButton
-            v-if="isAuthenticated"
-            label="Выйти"
-            color="neutral"
-            variant="outline"
-            size="sm"
-            @click="handleLogout"
-        />
     <template #right>
         <UNavigationMenu :items="items" variant="link" orientation="vertical"/>
 

@@ -31,12 +31,8 @@ const router = createRouter({
 
 const { isAuthenticated, me } = useAuth()
 
-onMounted(async () => {
+router.beforeEach(async (to, from) => {
   await me()
-})
-
-router.beforeEach((to, from) => {
-  console.log(to, from, isAuthenticated.value)
   if (to.meta.requiresAuth && !isAuthenticated.value) {
     return {
       path: '/login',

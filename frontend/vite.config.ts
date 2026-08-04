@@ -14,7 +14,7 @@ export default defineConfig({
     ui({
       ui: {
         colors: {
-          primary: 'fuchsia',
+          primary: 'amber',
           neutral: 'olive'
         },
         header: {

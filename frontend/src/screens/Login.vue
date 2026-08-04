@@ -26,8 +26,8 @@ const fields: AuthFormField[] = [{
 
 
 const schema = z.object({
-  login: z.string('Login is required'),
-  password: z.string('Password is required').min(8, 'Must be at least 8 characters')
+  login: z.string('Логин обязателен'),
+  password: z.string('Пароль обязателен').min(4, 'Минимум 4 символа')
 })
 
 type Schema = z.output<typeof schema>

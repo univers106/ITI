@@ -30,6 +30,6 @@ export async function changePasswordApi(oldPassword: string, newPassword: string
   return fetch('/api/auth/change-password', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ oldPassword, newPassword }),
+    body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
   })
 }

@@ -14,6 +14,9 @@
 }
 
 :root {
-  --ui-radius: 0rem;
-  --ui-primary: #800000;
+  --ui-primary: black;
+}
+
+.dark {
+  --ui-primary: white;
 }

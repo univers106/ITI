@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Header from './components/Header.vue'
+
 </script>
 
 <template>
@@ -7,8 +8,8 @@ import Header from './components/Header.vue'
       <Header />
 
       <UMain>
-          <UContainer>
-        <RouterView />
+        <UContainer>
+              <RouterView />
         </UContainer>
       </UMain>
 

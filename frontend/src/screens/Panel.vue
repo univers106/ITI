@@ -15,7 +15,17 @@
     <UPageHeader
     title="Панель управления"
     :description="`Вы вошли как ${user?.name}`"
+    class="border-b-0"
     />
+
+      <UPageGrid>
+          <Account />
+          <Account />
+          <Account />
+          <Account />
+          <Account />
+          <Account />
+      </UPageGrid>
 </template>
 
 
