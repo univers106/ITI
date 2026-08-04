@@ -1,17 +1,18 @@
 info:
-  name: change_password
+  name: post
   type: http
-  seq: 4
+  seq: 2
 
 http:
-  method: PATCH
-  url: localhost:8080/api/auth/change-password
+  method: POST
+  url: localhost:8080/api/users
   body:
     type: json
     data: |-
       {
-        "old_password": "password",
-        "new_password": "password"
+        "login": "newUSee",
+        "name": "newUSee",
+        "password": "newUSee"
       }
   auth: inherit
 

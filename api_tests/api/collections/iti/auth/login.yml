@@ -7,14 +7,12 @@ http:
   method: POST
   url: localhost:8080/api/auth/login
   body:
-    type: multipart-form
-    data:
-      - name: login
-        type: text
-        value: login
-      - name: password
-        type: text
-        value: password
+    type: json
+    data: |-
+      {
+        "login": "login",
+        "password": "password"
+      }
   auth: inherit
 
 settings:

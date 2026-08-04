@@ -2,6 +2,7 @@ package user_db
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/univers106/ITI/database"
 	"github.com/univers106/ITI/database/postgresql"
@@ -10,7 +11,11 @@ import (
 func (db *UserDatabase) Create(user database.User) error {
 	ok, password := user.IsPasswordUpdated()
 	if !ok {
-		return database.ErrUnexpected
+		return fmt.Errorf("password not updated")
+	}
+
+	if user.Permissions == nil {
+		user.Permissions = []string{}
 	}
 
 	passwordHash, passwordSalt := hashNewPassword(password)
@@ -31,7 +36,7 @@ func (db *UserDatabase) Create(user database.User) error {
 		passwordSalt,
 	)
 	if err != nil {
-		return database.ErrUnexpected
+		return fmt.Errorf("failed to insert to db: %w", err)
 	}
 
 	return nil
@@ -47,7 +52,7 @@ func (db *UserDatabase) Delete(login string) error {
 
 	res, err := db.pool.Exec(ctx, query, login)
 	if err != nil {
-		return database.ErrUnexpected
+		return fmt.Errorf("failed to delete from db: %w", err)
 	}
 
 	if res.RowsAffected() == 0 {

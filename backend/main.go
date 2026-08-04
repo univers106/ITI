@@ -66,6 +66,7 @@ func main() {
 
 	usersGroup := apiGroup.Group("/users")
 	usersGroup.GET("", users.Get, sessions.Authed([]string{database.PermUsersManipulation}))
+	usersGroup.POST("", users.Post, sessions.Authed([]string{database.PermUsersManipulation}))
 
 	echoServer.Validator = &Validator{validator: validator.New()}
 

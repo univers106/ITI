@@ -9,13 +9,15 @@ import (
 )
 
 type loginRequest struct {
-	Login    string `form:"login"`
-	Password string `form:"password"`
+	Login    string `json:"login"`
+	Password string `json:"password"`
 }
 
 func PostLogin(c *echo.Context) error {
 	var req loginRequest
-	if err := c.Bind(&req); err != nil {
+
+	err := c.Bind(&req)
+	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
 	}
 

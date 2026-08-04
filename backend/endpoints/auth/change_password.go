@@ -10,8 +10,8 @@ import (
 )
 
 type changePasswordRequest struct {
-	OldPassword string `form:"old_password"`
-	NewPassword string `form:"new_password"`
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
 }
 
 func PatchChangePassword(c *echo.Context) error {
