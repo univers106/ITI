@@ -12,3 +12,9 @@ GET     /users
 GET     /users/[login]
 PUT     /users/[login]
 DELETE  /users/[login]
+
+
+права:
+UsersManipulation -- управление пользователями
+
+SuperUser -- может всё (опастно иметь такого)

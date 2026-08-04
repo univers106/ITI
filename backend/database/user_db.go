@@ -1,10 +1,5 @@
 package database
 
-const (
-	PermUsersManipulation = "UsersManipulation"
-	PermSuperUser         = "SuperUser" // не стоит использовать такое в проде, сделал для удобной разработки
-)
-
 type UserDatabase interface {
 	GetByLogin(login string) (*User, error)
 	GetAll() ([]User, error)

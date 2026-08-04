@@ -1,31 +1,18 @@
-package sessions_middleware
+package map_based
 
 import (
 	"crypto/rand"
 	"errors"
 	"sync"
 	"time"
+
+	"github.com/univers106/ITI/middlewares/sessions"
 )
 
 var (
 	ErrCantGenerateKey = errors.New("could not generate key")
 	ErrSessionNotFound = errors.New("session not found")
 )
-
-const (
-	SessionTimeout     = 3 * time.Hour
-	SessionIdleTimeout = 10 * time.Minute
-)
-
-type SessionStorage interface {
-	GetLoginFromSession(key string) (string, error)
-	NewSession(userLogin string) (string, error)
-	DeleteSession(key string) error
-	DeleteUserSessions(userLogin string) error
-}
-
-// далее реализация на map, если, у вас сервис больше,
-// то стоит сделать реализацию на субд
 
 type SessionData struct {
 	UserLogin string
@@ -49,7 +36,7 @@ func (m *MapBasedSessionStorage) GetLoginFromSession(key string) (string, error)
 	}
 
 	now := time.Now()
-	if now.After(data.Timeout) || now.After(data.LastVisit.Add(SessionIdleTimeout)) {
+	if now.After(data.Timeout) || now.After(data.LastVisit.Add(sessions.SessionIdleTimeout)) {
 		delete(m.sessions, key)
 
 		return "", ErrSessionNotFound
@@ -75,7 +62,7 @@ func (m *MapBasedSessionStorage) NewSession(userLogin string) (string, error) {
 			m.sessions[key] = SessionData{
 				UserLogin: userLogin,
 				CreatedAt: now,
-				Timeout:   now.Add(SessionTimeout),
+				Timeout:   now.Add(sessions.SessionTimeout),
 				LastVisit: now,
 			}
 
@@ -100,7 +87,7 @@ func (m *MapBasedSessionStorage) DeleteSession(key string) error {
 	return nil
 }
 
-func (m *MapBasedSessionStorage) DeleteUserSessions(userLogin string) error {
+func (m *MapBasedSessionStorage) DeleteAllUserSessions(userLogin string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -113,7 +100,7 @@ func (m *MapBasedSessionStorage) DeleteUserSessions(userLogin string) error {
 	return nil
 }
 
-func NewSessionStorage() SessionStorage {
+func NewSessionStorage() *MapBasedSessionStorage {
 	return &MapBasedSessionStorage{
 		sessions: make(map[string]SessionData),
 	}

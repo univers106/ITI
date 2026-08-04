@@ -2,6 +2,11 @@ package database
 
 import "errors"
 
+const (
+	PermUsersManipulation = "UsersManipulation"
+	PermSuperUser         = "SuperUser"
+)
+
 var (
 	ErrUnexpected         = errors.New("unexpected error")
 	ErrUserNotFound       = errors.New("user not found")

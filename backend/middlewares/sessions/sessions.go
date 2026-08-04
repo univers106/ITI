@@ -1,4 +1,4 @@
-package sessions_middleware
+package sessions
 
 import (
 	"errors"
@@ -8,7 +8,7 @@ import (
 
 	"github.com/labstack/echo/v5"
 	"github.com/univers106/ITI/database"
-	user_database_middleware "github.com/univers106/ITI/middlewares/database_middleware/user"
+	user_database_middleware "github.com/univers106/ITI/middlewares/databases/user"
 )
 
 const AuthSession = "auth"
@@ -16,6 +16,11 @@ const AuthSession = "auth"
 var (
 	ErrUnauthorized = errors.New("unauthorized")
 	ErrBadCookies   = errors.New("bad cookies")
+)
+
+const (
+	SessionTimeout     = 3 * time.Hour
+	SessionIdleTimeout = 10 * time.Minute
 )
 
 func NewSessionsMiddleware(store SessionStorage) echo.MiddlewareFunc {
@@ -28,7 +33,7 @@ func NewSessionsMiddleware(store SessionStorage) echo.MiddlewareFunc {
 	}
 }
 
-func GetSessionStorage(c *echo.Context) (SessionStorage, error) {
+func getSessionStorage(c *echo.Context) (SessionStorage, error) {
 	store, err := echo.ContextGet[SessionStorage](c, "_session_storage")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get session store: %w", err)
@@ -37,7 +42,7 @@ func GetSessionStorage(c *echo.Context) (SessionStorage, error) {
 	return store, nil
 }
 
-func GetKeyFromCookies(c *echo.Context) (string, error) {
+func getKeyFromCookies(c *echo.Context) (string, error) {
 	cookie, err := c.Cookie("session_key")
 	if err != nil {
 		return "", ErrUnauthorized
@@ -46,7 +51,7 @@ func GetKeyFromCookies(c *echo.Context) (string, error) {
 	return cookie.Value, nil
 }
 
-func SetKeyToCookies(c *echo.Context, sessionKey string) {
+func setKeyToCookies(c *echo.Context, sessionKey string) {
 	cookie := new(http.Cookie)
 	cookie.Name = "session_key"
 	cookie.Value = sessionKey
@@ -58,7 +63,7 @@ func SetKeyToCookies(c *echo.Context, sessionKey string) {
 	c.SetCookie(cookie)
 }
 
-func DeleteCookies(c *echo.Context) {
+func deleteKeyFromCookies(c *echo.Context) {
 	cookie := new(http.Cookie)
 	cookie.Name = "session_key"
 	cookie.Value = ""
@@ -71,53 +76,34 @@ func DeleteCookies(c *echo.Context) {
 	c.SetCookie(cookie)
 }
 
-// GetUserFromSession возвращает пользователя из сессии
-// всё кроме ErrUnauthorized является ошибкой сервера,
-// а ErrUnauthorized нужно обработать и выдать 401
-// обычные эндпоинты должны использовать мидлварь OnlyUsersMiddleware.
-func GetUserFromSession(c *echo.Context) (*database.User, error) {
-	sessionStorage, err := GetSessionStorage(c)
+func getUserFromSession(c *echo.Context) (*database.User, error) {
+	sessionStorage, err := getSessionStorage(c)
 	if err != nil {
-		return nil, echo.NewHTTPError(
-			http.StatusInternalServerError,
-			"failed to get user from session",
-		)
+		return nil, echo.ErrInternalServerError
 	}
 
-	sessionKey, err := GetKeyFromCookies(c)
+	sessionKey, err := getKeyFromCookies(c)
 	if err != nil {
-		return nil, echo.NewHTTPError(
-			http.StatusInternalServerError,
-			"failed to get user from session",
-		)
+		return nil, echo.ErrUnauthorized
 	}
 
 	userLogin, err := sessionStorage.GetLoginFromSession(sessionKey)
 	if err != nil {
-		DeleteCookies(c)
+		deleteKeyFromCookies(c)
 
-		return nil, echo.NewHTTPError(
-			http.StatusInternalServerError,
-			"failed to get user from session. You cookies is broken, we delete it",
-		)
+		return nil, echo.ErrBadRequest
 	}
 
 	db, err := user_database_middleware.Get(c)
 	if err != nil {
-		return nil, echo.NewHTTPError(
-			http.StatusInternalServerError,
-			"failed to get database",
-		)
+		return nil, echo.ErrInternalServerError
 	}
 
 	user, err := db.GetByLogin(userLogin)
 	if err != nil {
-		DeleteCookies(c)
+		deleteKeyFromCookies(c)
 
-		return nil, echo.NewHTTPError(
-			http.StatusInternalServerError,
-			"can't get user by login. You cookies is broken, we delete it",
-		)
+		return nil, echo.ErrInternalServerError
 	}
 
 	return user, nil

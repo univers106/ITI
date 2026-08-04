@@ -1,11 +1,27 @@
 import { ref } from 'vue'
-import { me as checkAuthApi, login as loginApi, logout as logoutApi } from './auth'
+import { meApi, loginApi, logoutApi, type User } from './api/auth'
 
 const isAuthenticated = ref(false)
+const curUser = ref<User | null>(null)
+const isInitialized = ref(false)
 
 export function useAuth() {
-  async function checkAuth(): Promise<void> {
-    isAuthenticated.value = await checkAuthApi()
+  async function updateMe(): Promise<User | null> {
+    const user = await meApi()
+
+    console.log(user)
+    isAuthenticated.value = user?.login != undefined
+
+    curUser.value = user
+    isInitialized.value = true
+    return user as User || null
+  }
+
+  async function me(): Promise<User | null> {
+    if (!isInitialized.value) {
+      await updateMe()
+    }
+    return curUser.value
   }
 
   async function login(loginValue: string, passwordValue: string): Promise<boolean> {
@@ -24,5 +40,5 @@ export function useAuth() {
     return res.ok
   }
 
-  return { isAuthenticated, checkAuth, login, logout }
+  return { isAuthenticated, me, login, logout }
 }

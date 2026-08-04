@@ -16,7 +16,7 @@ func Run(pool *pgxpool.Pool) bool {
 
 	argsWithProg := os.Args
 
-	if len(argsWithProg) < 1 {
+	if len(argsWithProg) <= 1 {
 		return false
 	}
 
@@ -27,14 +27,14 @@ func Run(pool *pgxpool.Pool) bool {
 			return true
 		}
 
-		err := userDB.CreateUser(
-			database.User{
-				Login:       argsWithProg[2],
-				Name:        argsWithProg[2],
-				Permissions: []string{database.PermSuperUser},
-			},
-			argsWithProg[3],
-		)
+		user := database.User{
+			Login:       argsWithProg[2],
+			Name:        argsWithProg[2],
+			Permissions: []string{database.PermSuperUser},
+		}
+		user.SetPassword(argsWithProg[3])
+
+		err := userDB.Create(user)
 		if err != nil {
 			panic("failed to create super user: " + err.Error())
 		}

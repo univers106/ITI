@@ -1,6 +1,6 @@
 import './assets/main.css'
 import ui from '@nuxt/ui/vue-plugin'
-import { createApp } from 'vue'
+import { createApp, onMounted } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 import App from './App.vue'
@@ -29,11 +29,14 @@ const router = createRouter({
   routes,
 })
 
-const { isAuthenticated, checkAuth } = useAuth()
+const { isAuthenticated, me } = useAuth()
 
-await checkAuth()
+onMounted(async () => {
+  await me()
+})
 
 router.beforeEach((to, from) => {
+  console.log(to, from, isAuthenticated.value)
   if (to.meta.requiresAuth && !isAuthenticated.value) {
     return {
       path: '/login',

@@ -4,8 +4,8 @@ info:
   type: workspace
 
 collections:
-  - name: "user"
-    path: "collections/user"
+  - name: "iti"
+    path: "collections/iti"
 
 specs:
 

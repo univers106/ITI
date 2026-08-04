@@ -6,9 +6,11 @@ import Header from './components/Header.vue'
   <UApp>
       <Header />
 
-      <main class="min-h-[80vh]">
+      <UMain>
+          <UContainer>
         <RouterView />
-      </main>
+        </UContainer>
+      </UMain>
 
       <Footer />
   </UApp>
